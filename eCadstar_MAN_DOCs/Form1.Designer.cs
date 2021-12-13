@@ -48,10 +48,10 @@ namespace eCadstar_MAN_DOCs
             this.tbOutputFolder = new System.Windows.Forms.TextBox();
             this.label5 = new System.Windows.Forms.Label();
             this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
-            this.cbAssembly = new System.Windows.Forms.ComboBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.tbPCBA = new System.Windows.Forms.TextBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
-            this.comboBox2 = new System.Windows.Forms.ComboBox();
+            this.tbPCB = new System.Windows.Forms.TextBox();
             this.label4 = new System.Windows.Forms.Label();
             this.numericUpDown2 = new System.Windows.Forms.NumericUpDown();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
@@ -177,8 +177,8 @@ namespace eCadstar_MAN_DOCs
             // toolStripStatusLabel1
             // 
             this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
-            this.toolStripStatusLabel1.Size = new System.Drawing.Size(118, 17);
-            this.toolStripStatusLabel1.Text = "toolStripStatusLabel1";
+            this.toolStripStatusLabel1.Size = new System.Drawing.Size(48, 17);
+            this.toolStripStatusLabel1.Text = "Ready...";
             // 
             // openFileDialog1
             // 
@@ -243,17 +243,9 @@ namespace eCadstar_MAN_DOCs
             this.numericUpDown1.Size = new System.Drawing.Size(50, 20);
             this.numericUpDown1.TabIndex = 25;
             // 
-            // cbAssembly
-            // 
-            this.cbAssembly.FormattingEnabled = true;
-            this.cbAssembly.Location = new System.Drawing.Point(6, 17);
-            this.cbAssembly.Name = "cbAssembly";
-            this.cbAssembly.Size = new System.Drawing.Size(104, 21);
-            this.cbAssembly.TabIndex = 26;
-            // 
             // groupBox2
             // 
-            this.groupBox2.Controls.Add(this.cbAssembly);
+            this.groupBox2.Controls.Add(this.tbPCBA);
             this.groupBox2.Controls.Add(this.label5);
             this.groupBox2.Controls.Add(this.numericUpDown1);
             this.groupBox2.Location = new System.Drawing.Point(92, 107);
@@ -263,9 +255,16 @@ namespace eCadstar_MAN_DOCs
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "PCB Assembly";
             // 
+            // tbPCBA
+            // 
+            this.tbPCBA.Location = new System.Drawing.Point(16, 19);
+            this.tbPCBA.Name = "tbPCBA";
+            this.tbPCBA.Size = new System.Drawing.Size(100, 20);
+            this.tbPCBA.TabIndex = 26;
+            // 
             // groupBox3
             // 
-            this.groupBox3.Controls.Add(this.comboBox2);
+            this.groupBox3.Controls.Add(this.tbPCB);
             this.groupBox3.Controls.Add(this.label4);
             this.groupBox3.Controls.Add(this.numericUpDown2);
             this.groupBox3.Location = new System.Drawing.Point(355, 107);
@@ -275,13 +274,12 @@ namespace eCadstar_MAN_DOCs
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "PCB";
             // 
-            // comboBox2
+            // tbPCB
             // 
-            this.comboBox2.FormattingEnabled = true;
-            this.comboBox2.Location = new System.Drawing.Point(6, 17);
-            this.comboBox2.Name = "comboBox2";
-            this.comboBox2.Size = new System.Drawing.Size(104, 21);
-            this.comboBox2.TabIndex = 26;
+            this.tbPCB.Location = new System.Drawing.Point(6, 18);
+            this.tbPCB.Name = "tbPCB";
+            this.tbPCB.Size = new System.Drawing.Size(100, 20);
+            this.tbPCB.TabIndex = 27;
             // 
             // label4
             // 
@@ -359,13 +357,13 @@ namespace eCadstar_MAN_DOCs
         private System.Windows.Forms.TextBox tbOutputFolder;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.NumericUpDown numericUpDown1;
-        private System.Windows.Forms.ComboBox cbAssembly;
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.GroupBox groupBox3;
-        private System.Windows.Forms.ComboBox comboBox2;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.NumericUpDown numericUpDown2;
         private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog1;
+        private System.Windows.Forms.TextBox tbPCBA;
+        private System.Windows.Forms.TextBox tbPCB;
     }
 }
 
