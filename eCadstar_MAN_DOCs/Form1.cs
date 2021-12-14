@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using eCSPCBCOM;
 using eCSSCHCOM;
@@ -236,8 +232,6 @@ namespace eCadstar_MAN_DOCs
                     }
                 }
 
-                // (Must be very robust and use the long-winded way!)
-
                 DataRow dr = dtSymbols.NewRow();
 
                 foreach (KeyValuePair<string, string> prop in properties)
@@ -288,9 +282,6 @@ namespace eCadstar_MAN_DOCs
                 //---------------------------------------------------------------------------------//
                 //------------------- Stitch together the required data for each XYROT item--------//
                 //---------------------------------------------------------------------------------//
-
-                //dtComponents.DefaultView.Sort = "Reference_designator";
-                //dtComponents = dtComponents.DefaultView.ToTable();
 
                 List<string> lines = new List<string>();
                 string assemblyNo = tbPCBA.Text;
@@ -365,7 +356,7 @@ namespace eCadstar_MAN_DOCs
             }
 
             //------------------------------------------------------------------------------------//
-            //                      Create a DDM BOM file?                                           //
+            //                      Create a DDM BOM file?                                        //
             //------------------------------------------------------------------------------------//
 
             if (checkedListBox1.GetItemCheckState(1) == CheckState.Checked)

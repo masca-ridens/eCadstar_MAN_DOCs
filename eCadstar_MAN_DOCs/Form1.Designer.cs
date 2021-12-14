@@ -157,11 +157,11 @@ namespace eCadstar_MAN_DOCs
             this.checkedListBox1.CheckOnClick = true;
             this.checkedListBox1.FormattingEnabled = true;
             this.checkedListBox1.Items.AddRange(new object[] {
-            "Create XYP file",
-            "Create DDM BOM"});
+            "Create Pick\'n\'Place file",
+            "Create BOM"});
             this.checkedListBox1.Location = new System.Drawing.Point(92, 186);
             this.checkedListBox1.Name = "checkedListBox1";
-            this.checkedListBox1.Size = new System.Drawing.Size(120, 49);
+            this.checkedListBox1.Size = new System.Drawing.Size(136, 49);
             this.checkedListBox1.TabIndex = 18;
             // 
             // statusStrip1
@@ -253,7 +253,7 @@ namespace eCadstar_MAN_DOCs
             this.groupBox2.Size = new System.Drawing.Size(239, 57);
             this.groupBox2.TabIndex = 31;
             this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "PCB Assembly";
+            this.groupBox2.Text = "Assembled PCB";
             // 
             // tbPCBA
             // 
@@ -272,7 +272,7 @@ namespace eCadstar_MAN_DOCs
             this.groupBox3.Size = new System.Drawing.Size(239, 57);
             this.groupBox3.TabIndex = 32;
             this.groupBox3.TabStop = false;
-            this.groupBox3.Text = "PCB";
+            this.groupBox3.Text = "Bare PCB";
             // 
             // tbPCB
             // 
