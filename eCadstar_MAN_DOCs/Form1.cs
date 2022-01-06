@@ -267,9 +267,23 @@ namespace eCadstar_MAN_DOCs
             }
             if (sNotP.Count > 0 || pNotS.Count > 0)
             {
-                MessageBox.Show("PCB only: " + string.Join(",", pNotS) + Environment.NewLine +
-                    "SCM only: " + string.Join(",", sNotP + Environment.NewLine +
-                    "CONTINUE ANYWAY?"), "Inconsistencies found...", MessageBoxButtons.YesNo);
+                string pcbOnly = string.Empty;
+                if (pNotS.Count > 0)
+                {
+                    pcbOnly += "PCB only: " + string.Join(", ", pNotS) + Environment.NewLine;
+                }
+
+                string scmOnly = string.Empty;
+                if (sNotP.Count > 0)
+                {
+                    scmOnly += "SCM only: " + string.Join(", ", sNotP);
+                }
+                DialogResult dialogResult = MessageBox.Show(pcbOnly + scmOnly + Environment.NewLine + "CONTINUE ANYWAY?", "Inconsistencies found...", MessageBoxButtons.YesNo);
+                if (dialogResult == DialogResult.No)
+                {
+                    bRun.Enabled = true;
+                    return;
+                }
             }
 
             //------------------------------------------------------------------------------------//
@@ -453,11 +467,13 @@ namespace eCadstar_MAN_DOCs
                 {
                     case "Schematic":
                         {
+                            openFileDialog1.InitialDirectory = Path.GetDirectoryName(tbSchematicPath.Text);
                             openFileDialog1.Filter = "Schematic files (*.sdes)|*.sdes";
                             break;
                         }
                     case "PCB":
                         {
+                            openFileDialog1.InitialDirectory = Path.GetDirectoryName(tbPcbPath.Text);
                             openFileDialog1.Filter = "PCB files (*.pdes)|*.pdes";
                             break;
                         }
