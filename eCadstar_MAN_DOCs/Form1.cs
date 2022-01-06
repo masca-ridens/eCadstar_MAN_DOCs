@@ -300,7 +300,7 @@ namespace eCadstar_MAN_DOCs
                         DataRow symbolRow = dtSymbols.AsEnumerable()
                        .First(r => r.Field<string>("Reference Designator") == refDes);
 
-                        bool notFitted = symbolRow["Fitted"].ToString() == "No";
+                        bool notFitted = symbolRow["Fitted"].ToString().ToUpper() == "NO";
                         if (notFitted)
                         {
                             continue;
@@ -390,7 +390,7 @@ namespace eCadstar_MAN_DOCs
                         DataRow symbolRow = dtSymbols.AsEnumerable()
                        .First(r => r.Field<string>("Reference Designator") == refDes);
 
-                        bool notFitted = symbolRow["Fitted"].ToString() == "No";
+                        bool notFitted = symbolRow["Fitted"].ToString().ToUpper() == "NO";
                         if (notFitted)
                         {
                             continue;
