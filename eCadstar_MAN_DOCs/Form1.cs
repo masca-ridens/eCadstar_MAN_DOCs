@@ -10,12 +10,19 @@ using System.IO;
 using Microsoft.Win32;
 using System.Text.RegularExpressions;
 using System.Collections.ObjectModel;
+using DDMlib;
+using Windows_lib;
+using Maths_lib;
 
 namespace eCadstar_MAN_DOCs
 {
     public partial class Form1 : Form
     {
         readonly string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+        readonly string ddmServer = DDM.GetDdmServerFromRegistry();
+        string sqlDriver;
+        string connectionStringDDM;
+        List<string> problemList = new List<string>();
         public Form1()
         {
             InitializeComponent();
@@ -86,6 +93,28 @@ namespace eCadstar_MAN_DOCs
                     }
                 }
             }
+
+            // Try to find a driver on this computer...
+
+            string[] drivers = Windows.GetOdbcDriverNames();
+            int best = 999;
+
+            foreach (string s in drivers)
+            {
+                int thisOne = Maths.LevenshteinDistance(s, "SQL Server Native Client 11.0");
+                if (thisOne < best)
+                {
+                    best = thisOne;
+                    sqlDriver = s;
+                }
+                if (best == 0) break;
+            }
+            if (best < 5)   // Looks good so create the connection strings
+            {
+                toolStripStatusLabel1.Text = "Found " + sqlDriver + " in registry";
+                connectionStringDDM = "driver={" + sqlDriver + "};server=" + ddmServer + ";Uid=DDM_RO;Pwd=DBR34d3r;database=designdatamanager";
+            }
+            else toolStripStatusLabel1.Text = "No sql driver found in Registry";
         }
 
         private void Run_Click(object sender, EventArgs e)
@@ -111,11 +140,11 @@ namespace eCadstar_MAN_DOCs
                 return;
             }
 
-            if (!Directory.Exists(tbLibraryFolder.Text))
-            {
-                MessageBox.Show("Library not found");
-                return;
-            }
+            //if (!Directory.Exists(tbLibraryFolder.Text))
+            //{
+            //    MessageBox.Show("Library not found");
+            //    return;
+            //}
             bRun.Enabled = false;
 
             // Create datatables for the PARTs and COMPONENT data...
@@ -150,6 +179,7 @@ namespace eCadstar_MAN_DOCs
                 pcbEditor.OpenDesign(tbPcbPath.Text);
             }
 
+                pcbEditor.ExecuteMacro("delme");
             //-----------------------------------------------------------------------------//
             //---------------------- Fetch all COMPONENTS ---------------------------------//
             //-----------------------------------------------------------------------------//
@@ -270,13 +300,13 @@ namespace eCadstar_MAN_DOCs
                 string pcbOnly = string.Empty;
                 if (pNotS.Count > 0)
                 {
-                    pcbOnly += "PCB only: " + string.Join(", ", pNotS) + Environment.NewLine;
+                    pcbOnly += "In the PCB only: " + string.Join(", ", pNotS) + Environment.NewLine;
                 }
 
                 string scmOnly = string.Empty;
                 if (sNotP.Count > 0)
                 {
-                    scmOnly += "SCM only: " + string.Join(", ", sNotP);
+                    scmOnly += "In the SCM only: " + string.Join(", ", sNotP);
                 }
                 DialogResult dialogResult = MessageBox.Show(pcbOnly + scmOnly + Environment.NewLine + "CONTINUE ANYWAY?", "Inconsistencies found...", MessageBoxButtons.YesNo);
                 if (dialogResult == DialogResult.No)
@@ -284,6 +314,9 @@ namespace eCadstar_MAN_DOCs
                     bRun.Enabled = true;
                     return;
                 }
+
+                // Record in log file...
+                problemList.Add("Inconsistencies found: " + Environment.NewLine + pcbOnly + scmOnly);
             }
 
             //------------------------------------------------------------------------------------//
@@ -358,12 +391,12 @@ namespace eCadstar_MAN_DOCs
 
                 // Create a header...
                 List<string> header = new List<string>()
-            {
+                {
                 "DESIGN: " + assemblyNo + "   " + DateTime.Now,
                 string.Empty,
                 "Reference".PadRight(20, ' ') + "Part".PadRight(20, ' ') + "x".PadRight(20, ' ') + "y".PadRight(20, ' ') + "Angle".PadRight(20, ' ') + "Side",
                 string.Empty
-            };
+                };
 
                 File.WriteAllLines(Path.Combine(tbOutputFolder.Text, assemblyNo + "-" + numericUpDown1.Value.ToString() + "-XYP.txt"), header);
                 File.AppendAllLines(Path.Combine(tbOutputFolder.Text, assemblyNo + "-" + numericUpDown1.Value.ToString() + "-XYP.txt"), result);
@@ -409,7 +442,19 @@ namespace eCadstar_MAN_DOCs
                         {
                             continue;
                         }
-                        lines.Add(row["Part_name"].ToString());
+
+                        //                     Check components vs. DDM                                       //
+
+                        string part = row["Part_name"].ToString();
+                        bool existsInDdm = DDM.ExistsInDdm(connectionStringDDM, part);
+                        if (!existsInDdm)
+                        {
+                            string warning = "WARNING: " + part + " is not in DDM or a part with the same number & issue is flagged as deleted";
+                            if (!problemList.Contains(warning))
+                                problemList.Add(warning);
+                        }
+
+                        lines.Add(part);
                         lines.Add(string.Empty);
                         lines.Add(row["Reference_designator"].ToString());
                         lines.Add("SMT");
@@ -418,8 +463,28 @@ namespace eCadstar_MAN_DOCs
                     }
                 }
 
-                File.AppendAllLines(Path.Combine(tbOutputFolder.Text, assemblyNo + "-" + numericUpDown1.Value.ToString() + "-BOM.txt"), lines);
+                File.AppendAllLines(Path.Combine(tbOutputFolder.Text, assemblyNo + "-" + numericUpDown1.Value.ToString() + "-LOG.txt"), problemList);
+                File.AppendAllLines(Path.Combine(tbOutputFolder.Text, assemblyNo + "-" + numericUpDown1.Value.ToString() + "-BOM.rep"), lines);
             }
+
+            //------------------------------------------------------------------------------------//
+            //                      Create Gerbers?                                               //
+            //------------------------------------------------------------------------------------//
+
+            if (checkedListBox1.GetItemCheckState(2) == CheckState.Checked)
+            {
+                pcbEditor.ExecuteMacro("Gerbers");
+            }
+
+            //------------------------------------------------------------------------------------//
+            //                      Create Drill file?                                               //
+            //------------------------------------------------------------------------------------//
+
+            if (checkedListBox1.GetItemCheckState(3) == CheckState.Checked)
+            {
+                pcbEditor.ExecuteMacro(@"A:\eCadstar\Settings\Macros\Create_Gerber_&_drill_outputs.txt");
+            }
+
             bRun.Enabled = true;
         }
 

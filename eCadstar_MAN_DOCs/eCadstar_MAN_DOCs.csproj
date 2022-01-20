@@ -81,6 +81,12 @@
     <SignManifests>true</SignManifests>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="DDM_lib">
+      <HintPath>..\..\Class Libraries\DDM_lib\DDM_lib\bin\x64\Debug\DDM_lib.dll</HintPath>
+    </Reference>
+    <Reference Include="Maths_lib">
+      <HintPath>..\..\Class Libraries\Maths_lib\Maths_lib\bin\Debug\Maths_lib.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -92,6 +98,9 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="Windows_lib">
+      <HintPath>..\..\Class Libraries\Windows_lib\Windows_lib\bin\x64\Debug\Windows_lib.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Form1.cs">
