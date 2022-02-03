@@ -179,7 +179,7 @@ namespace eCadstar_MAN_DOCs
                 pcbEditor.OpenDesign(tbPcbPath.Text);
             }
 
-                pcbEditor.ExecuteMacro("delme");
+                pcbEditor.ExecuteMacro(@"( defineLayer active:""RulesByArea"" ) ");
             //-----------------------------------------------------------------------------//
             //---------------------- Fetch all COMPONENTS ---------------------------------//
             //-----------------------------------------------------------------------------//
@@ -473,7 +473,7 @@ namespace eCadstar_MAN_DOCs
 
             if (checkedListBox1.GetItemCheckState(2) == CheckState.Checked)
             {
-                pcbEditor.ExecuteMacro("Gerbers");
+                pcbEditor.ExecuteMacro(@"(request-boardinfo placeinfo)");
             }
 
             //------------------------------------------------------------------------------------//
@@ -482,7 +482,7 @@ namespace eCadstar_MAN_DOCs
 
             if (checkedListBox1.GetItemCheckState(3) == CheckState.Checked)
             {
-                pcbEditor.ExecuteMacro(@"A:\eCadstar\Settings\Macros\Create_Gerber_&_drill_outputs.txt");
+                pcbEditor.ExecuteMacro(@"");
             }
 
             bRun.Enabled = true;
