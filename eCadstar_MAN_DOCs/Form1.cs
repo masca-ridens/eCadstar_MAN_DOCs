@@ -21,7 +21,7 @@ namespace eCadstar_MAN_DOCs
         readonly string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
         readonly string ddmServer = DDM.GetDdmServerFromRegistry();
         string sqlDriver;
-        string connectionStringDDM;
+        static string connectionStringDDM;
         List<string> problemList = new List<string>();
         public Form1()
         {
@@ -30,8 +30,6 @@ namespace eCadstar_MAN_DOCs
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            tbOutputFolder.Text = desktopPath;
-
             //---------------------------------------------------------------------------//
             //------------------Fetch previously used paths from the Registry-----------//
             //---------------------------------------------------------------------------//
@@ -93,6 +91,9 @@ namespace eCadstar_MAN_DOCs
                     }
                 }
             }
+
+            // Enter default XYP file path...
+            tbXypFile.Text = Path.Combine(desktopPath, tbPCBA.Text + "-" + numericUpDown1.Value.ToString() + "-XYP.txt");
 
             // Try to find a driver on this computer...
 
@@ -177,9 +178,10 @@ namespace eCadstar_MAN_DOCs
             {
                 pcbEditor = new PCBApplication();
                 pcbEditor.OpenDesign(tbPcbPath.Text);
+                pcbEditor.Visible = true;
             }
+            pcbEditor.ExecuteMacro(@"(export-drill exec)");
 
-                pcbEditor.ExecuteMacro(@"( defineLayer active:""RulesByArea"" ) ");
             //-----------------------------------------------------------------------------//
             //---------------------- Fetch all COMPONENTS ---------------------------------//
             //-----------------------------------------------------------------------------//
@@ -487,7 +489,34 @@ namespace eCadstar_MAN_DOCs
 
             bRun.Enabled = true;
         }
+        private void button2_Click(object sender, EventArgs e)
+        {
+            List<string> input = File.ReadAllLines(tbXypFile.Text).ToList();
+            AppendMPN2XYP(ref input);
+            File.WriteAllLines(Path.Combine(tbOutputFolder.Text, tbPCBA.Text + "-" + numericUpDown1.Value.ToString() + "-XYP+MPN.txt"), input);
+        }
+        public static void AppendMPN2XYP(ref List<string> lines)
+        {
+            string pattern1 = @"(?<=\s+)[EM]\d{6}(?=\s+)";
+            Regex rg1 = new Regex(pattern1);
 
+            for (int i = 6; i < lines.Count; i++)
+            {
+                // Reject irrelevant lines...
+                MatchCollection matches = rg1.Matches(lines[i]);
+                if (matches.Count != 1) continue;
+
+                // Process relevant lines...
+                string ddmNo = matches[0].Value;
+                List<string> answers = DDM.GetManufacturerPartNumbers(connectionStringDDM, ddmNo);
+
+                foreach (string s in answers)
+                {
+                    if (string.IsNullOrEmpty(s)) continue;
+                    lines[i] += "  :  " + s;
+                }
+            }
+        }
         public static List<int> FindAllIndices(ref List<string> myList, string match, int maxNumber = 2)
         {
             // Return all indices strarting with a given substring...
@@ -534,20 +563,35 @@ namespace eCadstar_MAN_DOCs
                         {
                             openFileDialog1.InitialDirectory = Path.GetDirectoryName(tbSchematicPath.Text);
                             openFileDialog1.Filter = "Schematic files (*.sdes)|*.sdes";
+
+                            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+                            {
+                                tbSchematicPath.Text = openFileDialog1.FileName;
+                            }
                             break;
                         }
                     case "PCB":
                         {
                             openFileDialog1.InitialDirectory = Path.GetDirectoryName(tbPcbPath.Text);
                             openFileDialog1.Filter = "PCB files (*.pdes)|*.pdes";
+
+                            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+                            {
+                                tbPcbPath.Text = openFileDialog1.FileName;
+                            }
                             break;
                         }
-                }
+                    case "MPN":
+                        {
+                            openFileDialog1.InitialDirectory = Path.GetDirectoryName(tbXypFile.Text);
+                            openFileDialog1.Filter = "Text files (*.txt)|*.txt|Report files (*.rep)|*.rep|All files (*.*)|*.*";
 
-                if (openFileDialog1.ShowDialog() == DialogResult.OK)
-                {
-                    if (b.Tag.ToString() == "Schematic") tbSchematicPath.Text = openFileDialog1.FileName;
-                    else tbPcbPath.Text = openFileDialog1.FileName;
+                            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+                            {
+                                tbXypFile.Text = openFileDialog1.FileName;
+                            }
+                            break;
+                        }
                 }
             }
         }
@@ -572,7 +616,6 @@ namespace eCadstar_MAN_DOCs
                             break;
                         }
                 }
-
             }
         }
         private static string PadNumbers(string input)
