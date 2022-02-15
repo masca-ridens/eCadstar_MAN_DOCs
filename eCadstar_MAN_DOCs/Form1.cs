@@ -141,193 +141,86 @@ namespace eCadstar_MAN_DOCs
                 return;
             }
 
-            //if (!Directory.Exists(tbLibraryFolder.Text))
-            //{
-            //    MessageBox.Show("Library not found");
-            //    return;
-            //}
             bRun.Enabled = false;
 
-            // Create datatables for the PARTs and COMPONENT data...
+            //-----------------------------------------------------------------------------//
+            //---------------------- Open the eCadstar PCB design -------------------------//
+            //-----------------------------------------------------------------------------//
 
-            DataTable dtParts = new DataTable();
             DataTable dtComponents = new DataTable();
-            DataTable dtSymbols = new DataTable();
-
-            dtComponents.Columns.Add("Reference_designator");
-            dtComponents.Columns.Add("Part_name");
-            dtComponents.Columns.Add("x_coordinate");
-            dtComponents.Columns.Add("y_coordinate");
-            dtComponents.Columns.Add("Angle");
-            dtComponents.Columns.Add("Placement_side");
-            dtComponents.Columns.Add("isJumper");
-            dtComponents.Columns.Add("isStarpoint");
-
-            //-----------------------------------------------------------------------------//
-            //---------------------- Open the eCadstar PCB --------------------------------//
-            //-----------------------------------------------------------------------------//
-
             PCBApplication pcbEditor = null;
-            bool alreadyOpenPCB = false;
-            try
+            bool alreadyOpenPCB = OpenPCBDesign(ref pcbEditor, tbPcbPath.Text);
+            if (checkedListBox1.GetItemCheckState(0) == CheckState.Checked
+                || checkedListBox1.GetItemCheckState(1) == CheckState.Checked)
             {
-                pcbEditor = Marshal.GetActiveObject("eCADSTAR.PCBEditor.Application") as PCBApplication;
-                alreadyOpenPCB = true;
-            }
-            catch (COMException ex)
-            {
-                pcbEditor = new PCBApplication();
-                pcbEditor.OpenDesign(tbPcbPath.Text);
-                pcbEditor.Visible = true;
-            }
-            pcbEditor.ExecuteMacro(@"(export-drill exec)");
-
-            //-----------------------------------------------------------------------------//
-            //---------------------- Fetch all COMPONENTS ---------------------------------//
-            //-----------------------------------------------------------------------------//
-            //   (A COMPONENT is an instance of a PART, so it has a reference designator)  //
-            //-----------------------------------------------------------------------------//
-
-            toolStripStatusLabel1.Text = "There are " + pcbEditor.CurrentDesign.Components.Count.ToString() + " PCB components.";
-
-            // Scan every part so that a column exists in the datatable when required...
-
-            foreach (PCBComponent component in pcbEditor.CurrentDesign.Components)
-            {
-                var properties = component.Properties.Cast<eCSPCBCOM.IProperty>().ToDictionary(x => x.Name, x => x.Value);
-
-                foreach (KeyValuePair<string, string> prop in properties)
-                {
-                    if (!dtComponents.Columns.Contains(prop.Key))
-                    {
-                        dtComponents.Columns.Add(prop.Key);
-                    }
-                }
-                // (Must be very robust and use the long-winded way!)
-
-                DataRow dr = dtComponents.NewRow();
-
-                dr["Reference_designator"] = component.ReferenceDesignator;
-                dr["Part_Name"] = component.PartName;
-                dr["x_coordinate"] = component.CoordinateX.ToString();
-                dr["y_coordinate"] = component.CoordinateY.ToString();
-                dr["Angle"] = component.Angle.ToString();
-                dr["Placement_side"] = component.PlacementSide;
-                dr["isJumper"] = component.IsJumper.ToString();
-                dr["isStarpoint"] = component.IsStarpoint.ToString();
-
-                foreach (KeyValuePair<string, string> prop in properties)
-                {
-                    dr[prop.Key] = prop.Value;
-                }
-
-                dtComponents.Rows.Add(dr);
-            }
-            if (!alreadyOpenPCB)
-            {
-                pcbEditor.Quit();
+                dtComponents = GetAllComponents(pcbEditor);
             }
 
             //-----------------------------------------------------------------------------//
-            //---------------------- Open the eCadstar SCM --------------------------------//
+            //---------------------- Open the eCadstar SCM design -------------------------//
             //-----------------------------------------------------------------------------//
 
-            SchApplication scmEditor = null;
-            bool alreadyOpenSchematic = false;
-
-            try
+            if (checkedListBox1.GetItemCheckState(0) == CheckState.Checked
+                || checkedListBox1.GetItemCheckState(1) == CheckState.Checked)
             {
-                scmEditor = Marshal.GetActiveObject("eCADSTAR.SchematicEditor.Application") as SchApplication;
-                alreadyOpenSchematic = true;
-            }
-            catch (COMException ex)
-            {
-                scmEditor = new SchApplication();
-                scmEditor.OpenDesign(tbSchematicPath.Text);
-            }
-
-            //-----------------------------------------------------------------------------//
-            //------------------------- Fetch all SYMBOLS ---------------------------------//
-            //-----------------------------------------------------------------------------//
-
-            foreach (SchComponent component in scmEditor.Design.Components)
-            {
-                if (string.IsNullOrEmpty(component.ReferenceDesignator)) continue;      // reject GND symbols etc.
-
-                var properties = component.Properties.Cast<eCSSCHCOM.IProperty>().ToDictionary(x => x.Name, x => x.Value);
-
-                foreach (KeyValuePair<string, string> prop in properties)
+                SchApplication scmEditor = null;
+                string alreadyOpenSchematic = OpenScm(ref scmEditor, tbSchematicPath.Text);
+                if (!alreadyOpenSchematic.StartsWith(tbPCBA.Text))
                 {
-                    if (!dtSymbols.Columns.Contains(prop.Key))
-                    {
-                        dtSymbols.Columns.Add(prop.Key);
-                    }
-                }
-
-                DataRow dr = dtSymbols.NewRow();
-
-                foreach (KeyValuePair<string, string> prop in properties)
-                {
-                    dr[prop.Key] = prop.Value;
-                }
-
-                dtSymbols.Rows.Add(dr);
-            }
-
-            if (!alreadyOpenSchematic)
-            {
-                scmEditor.Quit();
-            }
-
-            toolStripStatusLabel1.Text += " and " + dtSymbols.Rows.Count + " schematic symbols.";
-
-            //---------------------------------------------------------------------------------//
-            //------------------- Check SCM and PCB are mutually consistent--------------------//
-            //---------------------------------------------------------------------------------//
-
-            IEnumerable<string> idsInPCB = dtComponents.AsEnumerable().Select(row => (string)row["Reference_designator"]);
-            IEnumerable<string> idsInSchematic = dtSymbols.AsEnumerable().Select(row => (string)row["Reference Designator"]);
-            List<string> sNotP = idsInSchematic.Except(idsInPCB).ToList();
-            List<string> pNotS = idsInPCB.Except(idsInSchematic).ToList();
-
-            // If there's FIDs then ignore; if not then flag as a problem
-            List<int> indices = FindAllIndices(ref pNotS, "FID");
-            if (indices.Count < 2)
-            {
-                MessageBox.Show("No Fiducial pair found while searching the PCB for \"FIDxy\". Abandoning.", "Problem found...");
-                Application.Exit();
-            }
-            if (sNotP.Count > 0 || pNotS.Count > 0)
-            {
-                string pcbOnly = string.Empty;
-                if (pNotS.Count > 0)
-                {
-                    pcbOnly += "In the PCB only: " + string.Join(", ", pNotS) + Environment.NewLine;
-                }
-
-                string scmOnly = string.Empty;
-                if (sNotP.Count > 0)
-                {
-                    scmOnly += "In the SCM only: " + string.Join(", ", sNotP);
-                }
-                DialogResult dialogResult = MessageBox.Show(pcbOnly + scmOnly + Environment.NewLine + "CONTINUE ANYWAY?", "Inconsistencies found...", MessageBoxButtons.YesNo);
-                if (dialogResult == DialogResult.No)
-                {
+                    MessageBox.Show("Please close " + alreadyOpenSchematic);
                     bRun.Enabled = true;
                     return;
                 }
+                DataTable dtSymbols = GetAllSymbols(scmEditor);
 
-                // Record in log file...
-                problemList.Add("Inconsistencies found: " + Environment.NewLine + pcbOnly + scmOnly);
-            }
+                scmEditor.Quit();
+
+                //---------------------------------------------------------------------------------//
+                //------------------- Check SCM and PCB are mutually consistent--------------------//
+                //---------------------------------------------------------------------------------//
+
+                IEnumerable<string> idsInPCB = dtComponents.AsEnumerable().Select(row => (string)row["Reference_designator"]);
+                IEnumerable<string> idsInSchematic = dtSymbols.AsEnumerable().Select(row => (string)row["Reference Designator"]);
+                List<string> sNotP = idsInSchematic.Except(idsInPCB).ToList();
+                List<string> pNotS = idsInPCB.Except(idsInSchematic).ToList();
+
+                // If there's FIDs then ignore; if not then flag as a problem
+                List<int> indices = FindAllIndices(ref pNotS, "FID");
+                if (indices.Count < 2)
+                {
+                    MessageBox.Show("No Fiducial pair found while searching the PCB for \"FIDxy\". Abandoning.", "Problem found...");
+                    Application.Exit();
+                }
+                if (sNotP.Count > 0 || pNotS.Count > 0)
+                {
+                    string pcbOnly = string.Empty;
+                    if (pNotS.Count > 0)
+                    {
+                        pcbOnly += "In the PCB only: " + string.Join(", ", pNotS) + Environment.NewLine;
+                    }
+
+                    string scmOnly = string.Empty;
+                    if (sNotP.Count > 0)
+                    {
+                        scmOnly += "In the SCM only: " + string.Join(", ", sNotP);
+                    }
+                    DialogResult dialogResult = MessageBox.Show(pcbOnly + scmOnly + Environment.NewLine + "CONTINUE ANYWAY?", "Inconsistencies found...", MessageBoxButtons.YesNo);
+                    if (dialogResult == DialogResult.No)
+                    {
+                        bRun.Enabled = true;
+                        return;
+                    }
+
+                    // Record in log file...
+                    problemList.Add("Inconsistencies found: " + Environment.NewLine + pcbOnly + scmOnly);
+                }
 
             //------------------------------------------------------------------------------------//
             //                      Create an XYP file?                                           //
             //------------------------------------------------------------------------------------//
 
-            if (checkedListBox1.GetItemCheckState(0) == CheckState.Checked)
+            if (checkedListBox1.GetItemCheckState(1) == CheckState.Checked)
             {
-
                 //---------------------------------------------------------------------------------//
                 //------------------- Stitch together the required data for each XYROT item--------//
                 //---------------------------------------------------------------------------------//
@@ -408,7 +301,7 @@ namespace eCadstar_MAN_DOCs
             //                      Create a DDM BOM file?                                        //
             //------------------------------------------------------------------------------------//
 
-            if (checkedListBox1.GetItemCheckState(1) == CheckState.Checked)
+            if (checkedListBox1.GetItemCheckState(0) == CheckState.Checked)
             {
                 List<string> lines = new List<string>();
                 string assemblyNo = tbPCBA.Text;
@@ -468,12 +361,22 @@ namespace eCadstar_MAN_DOCs
                 File.AppendAllLines(Path.Combine(tbOutputFolder.Text, assemblyNo + "-" + numericUpDown1.Value.ToString() + "-LOG.txt"), problemList);
                 File.AppendAllLines(Path.Combine(tbOutputFolder.Text, assemblyNo + "-" + numericUpDown1.Value.ToString() + "-BOM.rep"), lines);
             }
+            }
+
+            //------------------------------------------------------------------------------------//
+            //                      Create Assembly drawing?                                      //
+            //------------------------------------------------------------------------------------//
+
+            if (checkedListBox1.GetItemCheckState(2) == CheckState.Checked)
+            {
+                pcbEditor.ExecuteMacro(@"(plot prmfile:""A:\\Settings\\Manufacture\\Assembly_drawings.plot"" ;)");
+            }
 
             //------------------------------------------------------------------------------------//
             //                      Create Gerbers?                                               //
             //------------------------------------------------------------------------------------//
 
-            if (checkedListBox1.GetItemCheckState(2) == CheckState.Checked)
+            if (checkedListBox1.GetItemCheckState(3) == CheckState.Checked)
             {
                 pcbEditor.ExecuteMacro(@"(request-boardinfo placeinfo)");
             }
@@ -482,9 +385,9 @@ namespace eCadstar_MAN_DOCs
             //                      Create Drill file?                                               //
             //------------------------------------------------------------------------------------//
 
-            if (checkedListBox1.GetItemCheckState(3) == CheckState.Checked)
+            if (checkedListBox1.GetItemCheckState(4) == CheckState.Checked)
             {
-                pcbEditor.ExecuteMacro(@"");
+                pcbEditor.ExecuteMacro(@"(plot prmfile: ""C:\\Users\\mike.jones\\Desktop\\Assembly_drawings.plot"" ;)");
             }
 
             bRun.Enabled = true;
@@ -621,6 +524,146 @@ namespace eCadstar_MAN_DOCs
         private static string PadNumbers(string input)
         {
             return Regex.Replace(input, "[0-9]+", match => match.Value.PadLeft(10, '0'));
+        }
+        private bool OpenPCBDesign(ref PCBApplication pcbEditor, string designFile = "")
+        {
+            //-----------------------------------------------------------------------------//
+            //---------------------- Open the eCadstar PCB --------------------------------//
+            //-----------------------------------------------------------------------------//
+
+            try
+            {
+                pcbEditor = Marshal.GetActiveObject("eCADSTAR.PCBEditor.Application") as PCBApplication;
+
+                foreach (PCBDesign d in pcbEditor.Designs)
+                {
+                    if (designFile.EndsWith(d.Name))
+                        return true;
+                }
+                pcbEditor.OpenDesign(designFile);
+            }
+
+            catch (COMException ex)
+            {
+                pcbEditor = new PCBApplication();
+                pcbEditor.Visible = true;
+                pcbEditor.OpenDesign(designFile);
+            }
+
+            return true;
+        }
+
+        private string OpenScm(ref SchApplication scmEditor, string scmDesignName = "")
+        {
+            //-----------------------------------------------------------------------------//
+            //---------------------- Open the eCadstar SCM --------------------------------//
+            //-----------------------------------------------------------------------------//
+
+            try   // Is it already open?
+            {
+                scmEditor = Marshal.GetActiveObject("eCADSTAR.SchematicEditor.Application") as SchApplication;
+                scmDesignName = scmEditor.Design.Name;
+            }
+            catch (COMException ex)   // No, it isn't
+            {
+                scmEditor = new SchApplication();
+                if (!string.IsNullOrEmpty(scmDesignName))
+                {
+                    scmEditor.OpenDesign(scmDesignName);
+                }
+            }
+
+            scmEditor.Visible = false;
+            return scmDesignName;
+        }
+
+        private DataTable GetAllComponents(PCBApplication pcbEditor)
+        {
+            DataTable dtComponents = new DataTable();
+
+            dtComponents.Columns.Add("Reference_designator");
+            dtComponents.Columns.Add("Part_name");
+            dtComponents.Columns.Add("x_coordinate");
+            dtComponents.Columns.Add("y_coordinate");
+            dtComponents.Columns.Add("Angle");
+            dtComponents.Columns.Add("Placement_side");
+            dtComponents.Columns.Add("isJumper");
+            dtComponents.Columns.Add("isStarpoint");
+
+            //-----------------------------------------------------------------------------//
+            //---------------------- Fetch all COMPONENTS ---------------------------------//
+            //-----------------------------------------------------------------------------//
+            //   (A COMPONENT is an instance of a PART, so it has a reference designator)  //
+            //-----------------------------------------------------------------------------//
+
+            // Scan every part so that a column exists in the datatable when required...
+
+            foreach (PCBComponent component in pcbEditor.CurrentDesign.Components)
+            {
+                var properties = component.Properties.Cast<eCSPCBCOM.IProperty>().ToDictionary(x => x.Name, x => x.Value);
+
+                foreach (KeyValuePair<string, string> prop in properties)
+                {
+                    if (!dtComponents.Columns.Contains(prop.Key))
+                    {
+                        dtComponents.Columns.Add(prop.Key);
+                    }
+                }
+                // (Must be very robust and use the long-winded way!)
+
+                DataRow dr = dtComponents.NewRow();
+
+                dr["Reference_designator"] = component.ReferenceDesignator;
+                dr["Part_Name"] = component.PartName;
+                dr["x_coordinate"] = component.CoordinateX.ToString();
+                dr["y_coordinate"] = component.CoordinateY.ToString();
+                dr["Angle"] = component.Angle.ToString();
+                dr["Placement_side"] = component.PlacementSide;
+                dr["isJumper"] = component.IsJumper.ToString();
+                dr["isStarpoint"] = component.IsStarpoint.ToString();
+
+                foreach (KeyValuePair<string, string> prop in properties)
+                {
+                    dr[prop.Key] = prop.Value;
+                }
+
+                dtComponents.Rows.Add(dr);
+
+            }
+            return dtComponents;
+        }
+        private DataTable GetAllSymbols(SchApplication scmEditor)
+        {
+            DataTable dtSymbols = new DataTable();
+
+            //-----------------------------------------------------------------------------//
+            //------------------------- Fetch all SYMBOLS ---------------------------------//
+            //-----------------------------------------------------------------------------//
+
+            foreach (SchComponent component in scmEditor.Design.Components)
+            {
+                if (string.IsNullOrEmpty(component.ReferenceDesignator)) continue;      // reject GND symbols etc.
+
+                var properties = component.Properties.Cast<eCSSCHCOM.IProperty>().ToDictionary(x => x.Name, x => x.Value);
+
+                foreach (KeyValuePair<string, string> prop in properties)
+                {
+                    if (!dtSymbols.Columns.Contains(prop.Key))
+                    {
+                        dtSymbols.Columns.Add(prop.Key);
+                    }
+                }
+
+                DataRow dr = dtSymbols.NewRow();
+
+                foreach (KeyValuePair<string, string> prop in properties)
+                {
+                    dr[prop.Key] = prop.Value;
+                }
+
+                dtSymbols.Rows.Add(dr);
+            }
+            return dtSymbols;
         }
     }
 }

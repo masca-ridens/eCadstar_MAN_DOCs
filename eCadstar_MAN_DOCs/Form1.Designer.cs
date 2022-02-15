@@ -56,9 +56,9 @@ namespace eCadstar_MAN_DOCs
             this.tbLibraryFolder = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
-            this.button2 = new System.Windows.Forms.Button();
-            this.tbXypFile = new System.Windows.Forms.TextBox();
             this.button3 = new System.Windows.Forms.Button();
+            this.tbXypFile = new System.Windows.Forms.TextBox();
+            this.button2 = new System.Windows.Forms.Button();
             this.statusStrip1.SuspendLayout();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
@@ -83,8 +83,7 @@ namespace eCadstar_MAN_DOCs
             this.tbPcbPath.Name = "tbPcbPath";
             this.tbPcbPath.Size = new System.Drawing.Size(523, 20);
             this.tbPcbPath.TabIndex = 2;
-            this.tbPcbPath.Text = "C:\\Users\\mike.jones\\Documents\\eCadstar designs\\DPH34\\_PCB\\DPH34_3DEC\\DPH34_3Dec.p" +
-    "des";
+            this.tbPcbPath.Text = "C:\\Users\\mike.jones\\Documents\\eCadstar\\DESIGNS_local\\PCB\\A000268-2.pdes";
             // 
             // label3
             // 
@@ -101,8 +100,7 @@ namespace eCadstar_MAN_DOCs
             this.tbSchematicPath.Name = "tbSchematicPath";
             this.tbSchematicPath.Size = new System.Drawing.Size(523, 20);
             this.tbSchematicPath.TabIndex = 5;
-            this.tbSchematicPath.Text = "C:\\Users\\mike.jones\\Documents\\eCadstar designs\\DPH34\\_SCHEMATIC\\DPH34_3DEC\\DPH34_" +
-    "3DEC.sdes";
+            this.tbSchematicPath.Text = "C:\\Users\\mike.jones\\Documents\\eCadstar\\DESIGNS_local\\A000268-2\\A000268-2.sdes";
             // 
             // bPCB
             // 
@@ -133,13 +131,14 @@ namespace eCadstar_MAN_DOCs
             this.checkedListBox1.CheckOnClick = true;
             this.checkedListBox1.FormattingEnabled = true;
             this.checkedListBox1.Items.AddRange(new object[] {
-            "Create Pick\'n\'Place file",
             "Create BOM",
+            "Create Pick\'n\'Place file",
+            "Create Assy drawings",
             "Create Gerbers",
             "Create Drill file"});
             this.checkedListBox1.Location = new System.Drawing.Point(92, 186);
             this.checkedListBox1.Name = "checkedListBox1";
-            this.checkedListBox1.Size = new System.Drawing.Size(136, 64);
+            this.checkedListBox1.Size = new System.Drawing.Size(136, 79);
             this.checkedListBox1.TabIndex = 18;
             // 
             // statusStrip1
@@ -318,24 +317,6 @@ namespace eCadstar_MAN_DOCs
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Add Manufacurer\'s part numbers to XYP";
             // 
-            // button2
-            // 
-            this.button2.Location = new System.Drawing.Point(7, 20);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(75, 23);
-            this.button2.TabIndex = 0;
-            this.button2.Text = "+ MPNs";
-            this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.button2_Click);
-            // 
-            // tbXypFile
-            // 
-            this.tbXypFile.Location = new System.Drawing.Point(88, 22);
-            this.tbXypFile.Name = "tbXypFile";
-            this.tbXypFile.Size = new System.Drawing.Size(437, 20);
-            this.tbXypFile.TabIndex = 1;
-            this.tbXypFile.Text = "C:\\";
-            // 
             // button3
             // 
             this.button3.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -347,6 +328,24 @@ namespace eCadstar_MAN_DOCs
             this.button3.Text = "...";
             this.button3.UseVisualStyleBackColor = true;
             this.button3.Click += new System.EventHandler(this.bLibrary_Click);
+            // 
+            // tbXypFile
+            // 
+            this.tbXypFile.Location = new System.Drawing.Point(88, 22);
+            this.tbXypFile.Name = "tbXypFile";
+            this.tbXypFile.Size = new System.Drawing.Size(437, 20);
+            this.tbXypFile.TabIndex = 1;
+            this.tbXypFile.Text = "C:\\";
+            // 
+            // button2
+            // 
+            this.button2.Location = new System.Drawing.Point(7, 20);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(75, 23);
+            this.button2.TabIndex = 0;
+            this.button2.Text = "+ MPNs";
+            this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
             // Form1
             // 
