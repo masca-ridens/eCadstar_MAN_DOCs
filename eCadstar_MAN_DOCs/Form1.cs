@@ -165,7 +165,7 @@ namespace eCadstar_MAN_DOCs
             {
                 SchApplication scmEditor = null;
                 string alreadyOpenSchematic = OpenScm(ref scmEditor, tbSchematicPath.Text);
-                if (!alreadyOpenSchematic.StartsWith(tbPCBA.Text))
+                if (!alreadyOpenSchematic.Contains(tbPCBA.Text))
                 {
                     MessageBox.Show("Please close " + alreadyOpenSchematic);
                     bRun.Enabled = true;
@@ -233,7 +233,9 @@ namespace eCadstar_MAN_DOCs
                     // Reject non-DDM parts, except the FID's...
                     if (!row["Reference_designator"].ToString().StartsWith("FID"))
                     {
-                        if (row["Ddm_Part"].ToString() == "No") continue;
+                        // Allow test points...
+                        if (row["Ddm_Part"].ToString() == "No" &&
+                                !row["Reference_designator"].ToString().StartsWith("TP")) continue;
 
                         // Reject NO-FIT parts...
 
@@ -369,7 +371,7 @@ namespace eCadstar_MAN_DOCs
 
             if (checkedListBox1.GetItemCheckState(2) == CheckState.Checked)
             {
-                pcbEditor.ExecuteMacro(@"(plot prmfile:""A:\\Settings\\Manufacture\\Assembly_drawings.plot"" ;)");
+                pcbEditor.ExecuteMacro(@"(plot repeat:""on"" prmfile:""C:\Users\mike.jones\Documents\eCadstar\SETTINGS_local\Manufacture\ADR\ADRtb.plot"")");
             }
 
             //------------------------------------------------------------------------------------//
@@ -378,7 +380,7 @@ namespace eCadstar_MAN_DOCs
 
             if (checkedListBox1.GetItemCheckState(3) == CheckState.Checked)
             {
-                pcbEditor.ExecuteMacro(@"(request-boardinfo placeinfo)");
+                pcbEditor.ExecuteMacro(@"(export-photo prmfile:""C:\\Users\\mike.jones\\Documents\\eCadstar\\SETTINGS_local\\Manufacture\\Gerber\\Gerber_dialog.photo"" exec ) ");
             }
 
             //------------------------------------------------------------------------------------//
@@ -387,7 +389,7 @@ namespace eCadstar_MAN_DOCs
 
             if (checkedListBox1.GetItemCheckState(4) == CheckState.Checked)
             {
-                pcbEditor.ExecuteMacro(@"(plot prmfile: ""C:\\Users\\mike.jones\\Desktop\\Assembly_drawings.plot"" ;)");
+                pcbEditor.ExecuteMacro(@"( export-drill prmfile:""C:\\Users\\mike.jones\\Documents\\eCadstar\\SETTINGS_local\\Manufacture\\Drill\\6 - layer.drill"" exec ) ");
             }
 
             bRun.Enabled = true;

@@ -29,11 +29,8 @@ namespace eCadstar_MAN_DOCs
         /// </summary>
         private void InitializeComponent()
         {
-            this.label2 = new System.Windows.Forms.Label();
-            this.tbPcbPath = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
             this.tbSchematicPath = new System.Windows.Forms.TextBox();
-            this.bPCB = new System.Windows.Forms.Button();
             this.bSchematic = new System.Windows.Forms.Button();
             this.checkedListBox1 = new System.Windows.Forms.CheckedListBox();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
@@ -59,6 +56,9 @@ namespace eCadstar_MAN_DOCs
             this.button3 = new System.Windows.Forms.Button();
             this.tbXypFile = new System.Windows.Forms.TextBox();
             this.button2 = new System.Windows.Forms.Button();
+            this.bPCB = new System.Windows.Forms.Button();
+            this.label2 = new System.Windows.Forms.Label();
+            this.tbPcbPath = new System.Windows.Forms.TextBox();
             this.statusStrip1.SuspendLayout();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
@@ -68,27 +68,10 @@ namespace eCadstar_MAN_DOCs
             this.groupBox4.SuspendLayout();
             this.SuspendLayout();
             // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(6, 44);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(83, 13);
-            this.label2.TabIndex = 3;
-            this.label2.Text = "PCB Design File";
-            // 
-            // tbPcbPath
-            // 
-            this.tbPcbPath.Location = new System.Drawing.Point(92, 41);
-            this.tbPcbPath.Name = "tbPcbPath";
-            this.tbPcbPath.Size = new System.Drawing.Size(523, 20);
-            this.tbPcbPath.TabIndex = 2;
-            this.tbPcbPath.Text = "C:\\Users\\mike.jones\\Documents\\eCadstar\\DESIGNS_local\\PCB\\A000268-2.pdes";
-            // 
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(6, 70);
+            this.label3.Location = new System.Drawing.Point(6, 46);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(85, 13);
             this.label3.TabIndex = 4;
@@ -96,28 +79,16 @@ namespace eCadstar_MAN_DOCs
             // 
             // tbSchematicPath
             // 
-            this.tbSchematicPath.Location = new System.Drawing.Point(92, 67);
+            this.tbSchematicPath.Location = new System.Drawing.Point(92, 43);
             this.tbSchematicPath.Name = "tbSchematicPath";
             this.tbSchematicPath.Size = new System.Drawing.Size(523, 20);
             this.tbSchematicPath.TabIndex = 5;
             this.tbSchematicPath.Text = "C:\\Users\\mike.jones\\Documents\\eCadstar\\DESIGNS_local\\A000268-2\\A000268-2.sdes";
             // 
-            // bPCB
-            // 
-            this.bPCB.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.bPCB.Location = new System.Drawing.Point(621, 41);
-            this.bPCB.Name = "bPCB";
-            this.bPCB.Size = new System.Drawing.Size(31, 22);
-            this.bPCB.TabIndex = 16;
-            this.bPCB.Tag = "PCB";
-            this.bPCB.Text = "...";
-            this.bPCB.UseVisualStyleBackColor = true;
-            this.bPCB.Click += new System.EventHandler(this.bLibrary_Click);
-            // 
             // bSchematic
             // 
             this.bSchematic.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.bSchematic.Location = new System.Drawing.Point(621, 67);
+            this.bSchematic.Location = new System.Drawing.Point(621, 43);
             this.bSchematic.Name = "bSchematic";
             this.bSchematic.Size = new System.Drawing.Size(31, 22);
             this.bSchematic.TabIndex = 17;
@@ -347,11 +318,43 @@ namespace eCadstar_MAN_DOCs
             this.button2.UseVisualStyleBackColor = true;
             this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
+            // bPCB
+            // 
+            this.bPCB.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.bPCB.Location = new System.Drawing.Point(621, 72);
+            this.bPCB.Name = "bPCB";
+            this.bPCB.Size = new System.Drawing.Size(31, 22);
+            this.bPCB.TabIndex = 36;
+            this.bPCB.Tag = "PCB";
+            this.bPCB.Text = "...";
+            this.bPCB.UseVisualStyleBackColor = true;
+            this.bPCB.Click += new System.EventHandler(this.bLibrary_Click);
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(6, 75);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(83, 13);
+            this.label2.TabIndex = 35;
+            this.label2.Text = "PCB Design File";
+            // 
+            // tbPcbPath
+            // 
+            this.tbPcbPath.Location = new System.Drawing.Point(92, 72);
+            this.tbPcbPath.Name = "tbPcbPath";
+            this.tbPcbPath.Size = new System.Drawing.Size(523, 20);
+            this.tbPcbPath.TabIndex = 34;
+            this.tbPcbPath.Text = "C:\\Users\\mike.jones\\Documents\\eCadstar\\DESIGNS_local\\PCB\\A000268-2.pdes";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(669, 450);
+            this.Controls.Add(this.bPCB);
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this.tbPcbPath);
             this.Controls.Add(this.groupBox4);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.groupBox2);
@@ -360,12 +363,9 @@ namespace eCadstar_MAN_DOCs
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.checkedListBox1);
             this.Controls.Add(this.bSchematic);
-            this.Controls.Add(this.bPCB);
             this.Controls.Add(this.bLibrary);
             this.Controls.Add(this.tbSchematicPath);
             this.Controls.Add(this.label3);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.tbPcbPath);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.tbLibraryFolder);
             this.Name = "Form1";
@@ -390,11 +390,8 @@ namespace eCadstar_MAN_DOCs
         }
 
         #endregion
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.TextBox tbPcbPath;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.TextBox tbSchematicPath;
-        private System.Windows.Forms.Button bPCB;
         private System.Windows.Forms.Button bSchematic;
         private System.Windows.Forms.CheckedListBox checkedListBox1;
         private System.Windows.Forms.StatusStrip statusStrip1;
@@ -420,6 +417,9 @@ namespace eCadstar_MAN_DOCs
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.TextBox tbXypFile;
+        private System.Windows.Forms.Button bPCB;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.TextBox tbPcbPath;
     }
 }
 
