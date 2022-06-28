@@ -106,10 +106,12 @@ namespace eCadstar_MAN_DOCs
             "Create Pick\'n\'Place file",
             "Create Assy drawings",
             "Create Gerbers",
-            "Create Drill file"});
+            "Create Drill file",
+            "Create CDR pdf",
+            "Zip CAD docs"});
             this.checkedListBox1.Location = new System.Drawing.Point(92, 186);
             this.checkedListBox1.Name = "checkedListBox1";
-            this.checkedListBox1.Size = new System.Drawing.Size(136, 79);
+            this.checkedListBox1.Size = new System.Drawing.Size(136, 109);
             this.checkedListBox1.TabIndex = 18;
             // 
             // statusStrip1
