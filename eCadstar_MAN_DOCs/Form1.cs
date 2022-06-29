@@ -84,7 +84,7 @@ namespace eCadstar_MAN_DOCs
                     string issue_a = key.GetValue("PCBA issue").ToString();
                     if (decimal.TryParse(issue_a, out decimal result))
                     {
-                        numericUpDown1.Value = result;
+                        numPcbaNo.Value = result;
                     }
                 }
 
@@ -99,7 +99,7 @@ namespace eCadstar_MAN_DOCs
             }
 
             // Enter default XYP file path...
-            tbXypFile.Text = Path.Combine(desktopPath, tbPCBA.Text + "-" + numericUpDown1.Value.ToString() + "-XYP.txt");
+            tbXypFile.Text = Path.Combine(desktopPath, tbPCBA.Text + "-" + numPcbaNo.Value.ToString() + "-XYP.txt");
 
             // Try to find a driver on this computer...
 
@@ -126,7 +126,16 @@ namespace eCadstar_MAN_DOCs
 
         private void Run_Click(object sender, EventArgs e)
         {
-            string xypFile = string.Empty;
+            string targetDirectory = tbOutputFolder.Text;
+            if (!targetDirectory.EndsWith(sepChar))
+                targetDirectory += sepChar;
+
+            string xypName = tbPCBA.Text + "-" + numPcbaNo.Value.ToString() + "-XYP";
+            string adrName = tbPCBA.Text + "-" + numPcbaNo.Value.ToString() + "-ADR";
+            string cdrName = tbPCBA.Text + "-" + numPcbaNo.Value.ToString() + "-CDR";
+            string cadName = tbPCBA.Text + "-" + numPcbaNo.Value.ToString() + "-CAD";
+
+            string xypFilePath = Path.Combine(targetDirectory, xypName + ".txt");
 
             //----------------------------------------------------------------------------//
             //----------------------------- Pre-flight checks ----------------------------//
@@ -302,9 +311,9 @@ namespace eCadstar_MAN_DOCs
                 "DESIGN: " + assemblyNo + "   " + DateTime.Now,
                 string.Empty,
                 "Reference".PadRight(20, ' ') + "Part".PadRight(20, ' ') + "x".PadRight(20, ' ') + "y".PadRight(20, ' ') + "Angle".PadRight(20, ' ') + "Side", string.Empty};
-                    xypFile = Path.Combine(tbOutputFolder.Text, assemblyNo + "-" + numericUpDown1.Value.ToString() + "-XYP.txt");
-                    File.WriteAllLines(xypFile, header);
-                    File.AppendAllLines(xypFile, result);
+                    xypFilePath = Path.Combine(targetDirectory, assemblyNo + "-" + numPcbaNo.Value.ToString() + "-XYP.txt");
+                    File.WriteAllLines(xypFilePath, header);
+                    File.AppendAllLines(xypFilePath, result);
                 }
 
                 //------------------------------------------------------------------------------------//
@@ -368,8 +377,8 @@ namespace eCadstar_MAN_DOCs
                         }
                     }
 
-                    File.AppendAllLines(Path.Combine(tbOutputFolder.Text, assemblyNo + "-" + numericUpDown1.Value.ToString() + "-LOG.txt"), problemList);
-                    File.AppendAllLines(Path.Combine(tbOutputFolder.Text, assemblyNo + "-" + numericUpDown1.Value.ToString() + "-BOM.rep"), lines);
+                    File.AppendAllLines(Path.Combine(targetDirectory, assemblyNo + "-" + numPcbaNo.Value.ToString() + "-LOG.txt"), problemList);
+                    File.AppendAllLines(Path.Combine(targetDirectory, assemblyNo + "-" + numPcbaNo.Value.ToString() + "-BOM.rep"), lines);
                 }
             }
 
@@ -379,37 +388,45 @@ namespace eCadstar_MAN_DOCs
 
             if (checkedListBox1.GetItemCheckState(2) == CheckState.Checked)
             {
-                string assemblyNo = tbPCBA.Text;
-                string newFileName = @"C:\Users\mike.jones\Desktop\" + assemblyNo + "-" + numericUpDown1.Value.ToString() + "-ADR" + ".pdf";
-                string defaultFileName = @"C:\Users\mike.jones\Desktop\A000xxx-y-ADR.pdf";
+                string newFileName = Path.Combine(targetDirectory,  adrName + ".pdf");
+                string defaultFileName = Path.Combine(targetDirectory, "A000xxx-y-ADR.pdf");
 
                 pcbEditor.ExecuteMacro(@"( playback-macro filepath:""C:/Users/mike.jones/Documents/eCadstar/SETTINGS_local/Macros/ADRtb.txt"" )");
-                if (File.Exists(defaultFileName) && !File.Exists(newFileName))
+                try
+                {
                     File.Move(defaultFileName, newFileName);
+                }
+                catch
+                {
+                    MessageBox.Show("Check for eCadstar dialog");
+                    File.Move(defaultFileName, newFileName);
+                }
 
-                if (File.Exists(xypFile) && File.Exists(newFileName))
+                if (File.Exists(xypFilePath) && File.Exists(newFileName))
                 {
                     // Zip it with the XYP (if it exists)
                     // Create FileStream for output ZIP archive
-                    using (FileStream zipFile = File.Open(Path.Combine(tbOutputFolder.Text, tbPCBA.Text + "-" + numericUpDown1.Value.ToString() + "-ADR.zip"), FileMode.Create))
+                    using (FileStream zipFile = File.Open(Path.Combine(targetDirectory, adrName + ".zip"), FileMode.Create))
                     {
                         // File to be added to archive
                         using (FileStream source1 = File.Open(newFileName, FileMode.Open, FileAccess.Read))
                         {
                             // File to be added to archive
-                            using (FileStream source2 = File.Open(xypFile, FileMode.Open, FileAccess.Read))
+                            using (FileStream source2 = File.Open(xypFilePath, FileMode.Open, FileAccess.Read))
                             {
                                 using (var archive = new Archive())
                                 {
                                     // Add files to the archive
                                     archive.CreateEntry(Path.GetFileName(newFileName), source1);
-                                    archive.CreateEntry(Path.GetFileName(xypFile), source2);
+                                    archive.CreateEntry(Path.GetFileName(xypFilePath), source2);
                                     // ZIP the files
                                     archive.Save(zipFile, new ArchiveSaveOptions() { Encoding = System.Text.Encoding.ASCII, ArchiveComment = "XYP & a combined ADR are compressed in this archive" });
                                 }
                             }
                         }
                     }
+                    File.Delete(xypFilePath);
+                    File.Delete(newFileName);
                 }
             }
 
@@ -428,7 +445,7 @@ namespace eCadstar_MAN_DOCs
 
             if (checkedListBox1.GetItemCheckState(4) == CheckState.Checked)
             {
-                pcbEditor.ExecuteMacro(@"( playback-macro filepath:""C:/Users/mike.jones/Documents/eCadstar/SETTINGS_local/Macros/Drill.txt"" )");
+                pcbEditor.ExecuteMacro(@"( playback-macro filepath:""A:/Settings/Macros/Drill.txt"" )");
             }
 
             //------------------------------------------------------------------------------------//
@@ -438,6 +455,17 @@ namespace eCadstar_MAN_DOCs
             if (checkedListBox1.GetItemCheckState(5) == CheckState.Checked)
             {
                 scmEditor.ExecuteMacro(@"(playback-macro filepath:""C:/Users/mike.jones/Documents/eCadstar/SETTINGS_local/Macros/PDF.txt""");
+                try
+                {
+                File.Move(Path.Combine(targetDirectory, "A000xxx-y-CDR.pdf"), 
+                    Path.Combine(targetDirectory, cdrName + ".pdf"));
+                }
+                catch
+                {
+                    MessageBox.Show("Check for eCadstar dialog");
+                    File.Move(Path.Combine(targetDirectory, "A000xxx-y-CDR.pdf"),
+                        Path.Combine(targetDirectory, cdrName + ".pdf"));
+                }
             }
 
             //------------------------------------------------------------------------------------//
@@ -451,6 +479,9 @@ namespace eCadstar_MAN_DOCs
                 string filePcb = tbPcbPath.Text;
                 string shareFolder = Path.Combine(temporaryFolder, "eCad");
                 string tmpFilePcb = Path.Combine(shareFolder, Path.GetFileName(filePcb));
+
+                // Copy source files to TEMP so we don't get conflicts with open files...
+
                 Directory.CreateDirectory(shareFolder);  // Only created if it doesn't exist
                 File.Copy(filePcb, tmpFilePcb, true);
 
@@ -458,14 +489,17 @@ namespace eCadstar_MAN_DOCs
                 if (!dirScm.EndsWith(sepChar))
                     dirScm += sepChar;
 
+                DirectoryInfo di = new DirectoryInfo(tbSchematicPath.Text);
+                string tmpDirScm = Path.Combine(shareFolder, di.Parent.Name);
+                CopyDirectory(dirScm, tmpDirScm, true);
 
                 if (File.Exists(tbSchematicPath.Text) && File.Exists(filePcb))
                 {
-                    string zipArchive = Path.Combine(tbOutputFolder.Text, tbPCBA.Text + "-" + numericUpDown1.Value.ToString() + "-CAD.zip");
+                    string zipArchive = Path.Combine(targetDirectory, cadName + ".zip");
 
                     if (File.Exists(zipArchive))
                         File.Delete(zipArchive);
-                    ZipFile.CreateFromDirectory(dirScm, zipArchive, CompressionLevel.Optimal, true);
+                    ZipFile.CreateFromDirectory(tmpDirScm, zipArchive, CompressionLevel.Optimal, true);
 
                         using (ZipArchive archive = ZipFile.Open(zipArchive, ZipArchiveMode.Update))
                         {
@@ -477,11 +511,11 @@ namespace eCadstar_MAN_DOCs
 
             bRun.Enabled = true;
         }
-        private void button2_Click(object sender, EventArgs e)
+        private void bMpns_Click(object sender, EventArgs e)
         {
             List<string> input = File.ReadAllLines(tbXypFile.Text).ToList();
             AppendMPN2XYP(ref input);
-            File.WriteAllLines(Path.Combine(tbOutputFolder.Text, tbPCBA.Text + "-" + numericUpDown1.Value.ToString() + "-XYP+MPN.txt"), input);
+            File.WriteAllLines(Path.Combine(tbOutputFolder.Text, tbPCBA.Text + "-" + numPcbaNo.Value.ToString() + "-XYP+MPN.txt"), input);
         }
         public static void AppendMPN2XYP(ref List<string> lines)
         {
@@ -536,7 +570,7 @@ namespace eCadstar_MAN_DOCs
             key.SetValue("Output path", tbOutputFolder.Text);
             key.SetValue("PCBA", tbPCBA.Text);
             key.SetValue("PCB", tbPCB.Text);
-            key.SetValue("PCBA issue", numericUpDown1.Value.ToString());
+            key.SetValue("PCBA issue", numPcbaNo.Value.ToString());
             key.SetValue("PCB issue", numericUpDown2.Value.ToString());
             key.Close();
         }
@@ -782,5 +816,6 @@ namespace eCadstar_MAN_DOCs
                 }
             }
         }
+
     }
 }

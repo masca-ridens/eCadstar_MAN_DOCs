@@ -41,7 +41,7 @@ namespace eCadstar_MAN_DOCs
             this.button1 = new System.Windows.Forms.Button();
             this.tbOutputFolder = new System.Windows.Forms.TextBox();
             this.label5 = new System.Windows.Forms.Label();
-            this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
+            this.numPcbaNo = new System.Windows.Forms.NumericUpDown();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.tbPCBA = new System.Windows.Forms.TextBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
@@ -55,13 +55,13 @@ namespace eCadstar_MAN_DOCs
             this.groupBox4 = new System.Windows.Forms.GroupBox();
             this.button3 = new System.Windows.Forms.Button();
             this.tbXypFile = new System.Windows.Forms.TextBox();
-            this.button2 = new System.Windows.Forms.Button();
+            this.bMpns = new System.Windows.Forms.Button();
             this.bPCB = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
             this.tbPcbPath = new System.Windows.Forms.TextBox();
             this.statusStrip1.SuspendLayout();
             this.groupBox1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numPcbaNo)).BeginInit();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown2)).BeginInit();
@@ -186,18 +186,18 @@ namespace eCadstar_MAN_DOCs
             this.label5.TabIndex = 24;
             this.label5.Text = "Issue #";
             // 
-            // numericUpDown1
+            // numPcbaNo
             // 
-            this.numericUpDown1.Location = new System.Drawing.Point(171, 19);
-            this.numericUpDown1.Name = "numericUpDown1";
-            this.numericUpDown1.Size = new System.Drawing.Size(50, 20);
-            this.numericUpDown1.TabIndex = 25;
+            this.numPcbaNo.Location = new System.Drawing.Point(171, 19);
+            this.numPcbaNo.Name = "numPcbaNo";
+            this.numPcbaNo.Size = new System.Drawing.Size(50, 20);
+            this.numPcbaNo.TabIndex = 25;
             // 
             // groupBox2
             // 
             this.groupBox2.Controls.Add(this.tbPCBA);
             this.groupBox2.Controls.Add(this.label5);
-            this.groupBox2.Controls.Add(this.numericUpDown1);
+            this.groupBox2.Controls.Add(this.numPcbaNo);
             this.groupBox2.Location = new System.Drawing.Point(92, 107);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(239, 57);
@@ -282,7 +282,7 @@ namespace eCadstar_MAN_DOCs
             // 
             this.groupBox4.Controls.Add(this.button3);
             this.groupBox4.Controls.Add(this.tbXypFile);
-            this.groupBox4.Controls.Add(this.button2);
+            this.groupBox4.Controls.Add(this.bMpns);
             this.groupBox4.Location = new System.Drawing.Point(13, 310);
             this.groupBox4.Name = "groupBox4";
             this.groupBox4.Size = new System.Drawing.Size(581, 51);
@@ -310,15 +310,15 @@ namespace eCadstar_MAN_DOCs
             this.tbXypFile.TabIndex = 1;
             this.tbXypFile.Text = "C:\\";
             // 
-            // button2
+            // bMpns
             // 
-            this.button2.Location = new System.Drawing.Point(7, 20);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(75, 23);
-            this.button2.TabIndex = 0;
-            this.button2.Text = "+ MPNs";
-            this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.button2_Click);
+            this.bMpns.Location = new System.Drawing.Point(7, 20);
+            this.bMpns.Name = "bMpns";
+            this.bMpns.Size = new System.Drawing.Size(75, 23);
+            this.bMpns.TabIndex = 0;
+            this.bMpns.Text = "+ MPNs";
+            this.bMpns.UseVisualStyleBackColor = true;
+            this.bMpns.Click += new System.EventHandler(this.bMpns_Click);
             // 
             // bPCB
             // 
@@ -378,7 +378,7 @@ namespace eCadstar_MAN_DOCs
             this.statusStrip1.PerformLayout();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numPcbaNo)).EndInit();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
             this.groupBox3.ResumeLayout(false);
@@ -404,7 +404,7 @@ namespace eCadstar_MAN_DOCs
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.TextBox tbOutputFolder;
         private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.NumericUpDown numericUpDown1;
+        private System.Windows.Forms.NumericUpDown numPcbaNo;
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.GroupBox groupBox3;
         private System.Windows.Forms.Label label4;
@@ -416,7 +416,7 @@ namespace eCadstar_MAN_DOCs
         private System.Windows.Forms.TextBox tbLibraryFolder;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.GroupBox groupBox4;
-        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Button bMpns;
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.TextBox tbXypFile;
         private System.Windows.Forms.Button bPCB;
