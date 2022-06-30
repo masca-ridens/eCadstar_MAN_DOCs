@@ -160,39 +160,59 @@ namespace eCadstar_MAN_DOCs
 
             bRun.Enabled = false;
 
-            //-----------------------------------------------------------------------------//
-            //---------------------- Open the eCadstar PCB design -------------------------//
-            //-----------------------------------------------------------------------------//
-
-            DataTable dtComponents = new DataTable();
             PCBApplication pcbEditor = null;
-            bool alreadyOpenPCB = OpenPCBDesign(ref pcbEditor, tbPcbPath.Text);
-            if (checkedListBox1.GetItemCheckState(0) == CheckState.Checked
-                || checkedListBox1.GetItemCheckState(1) == CheckState.Checked)
-            {
-                dtComponents = GetAllComponents(pcbEditor);
-            }
-
-            //-----------------------------------------------------------------------------//
-            //---------------------- Open the eCadstar SCM design -------------------------//
-            //-----------------------------------------------------------------------------//
-
             SchApplication scmEditor = null;
 
-            if (checkedListBox1.GetItemCheckState(0) == CheckState.Checked
-                || checkedListBox1.GetItemCheckState(1) == CheckState.Checked
-                || checkedListBox1.GetItemCheckState(5) == CheckState.Checked)
+            // Find which items are wanted from the checkboxes...
+
+            bool createBOM = checkedListBox1.CheckedItems.Contains("Create BOM");
+            bool createXYP = checkedListBox1.CheckedItems.Contains("Create XYP");
+            bool createADR = checkedListBox1.CheckedItems.Contains("Create ADR");
+            bool createGBR = checkedListBox1.CheckedItems.Contains("Create GBR");
+            bool createDRILL = checkedListBox1.CheckedItems.Contains("Create DRILL");
+            bool createCDR = checkedListBox1.CheckedItems.Contains("Create CDR");
+            bool createCAD = checkedListBox1.CheckedItems.Contains("Zip CAD docs");
+
+            if (createBOM || createXYP || createADR || createGBR || createDRILL)
             {
-                string alreadyOpenSchematic = OpenScm(ref scmEditor, tbSchematicPath.Text);
+                //-----------------------------------------------------------------------------//
+                //---------------------- Open the eCadstar PCB design -------------------------//
+                //-----------------------------------------------------------------------------//
+
+                bool alreadyOpenPCB = OpenPCBDesign(ref pcbEditor, true, tbPcbPath.Text);
+            }
+
+            if (createBOM || createXYP || createCDR)
+            {
+                //-----------------------------------------------------------------------------//
+                //---------------------- Open the eCadstar SCM design -------------------------//
+                //-----------------------------------------------------------------------------//
+
+                string alreadyOpenSchematic = OpenScm(ref scmEditor, true, tbSchematicPath.Text);
+                scmEditor.Visible = true;
                 if (!alreadyOpenSchematic.Contains(tbPCBA.Text))
                 {
                     MessageBox.Show("Please close " + alreadyOpenSchematic);
                     bRun.Enabled = true;
                     return;
                 }
-                DataTable dtSymbols = GetAllSymbols(scmEditor);
+            }
 
-                //scmEditor.Quit();
+            if (createBOM || createXYP)
+            {
+                DataTable dtComponents = new DataTable();
+                toolStripStatusLabel1.Text = "Fetching PCB parts";
+                dtComponents = GetAllComponents(pcbEditor);
+
+                DataTable dtSymbols = new DataTable();
+                //if (checkedListBox1.GetItemCheckState(0) == CheckState.Checked
+                //|| checkedListBox1.GetItemCheckState(1) == CheckState.Checked)
+                //{
+                    toolStripStatusLabel1.Text = "Fetching schematic parts";
+                    dtSymbols = GetAllSymbols(scmEditor);
+                //}
+
+                scmEditor.Quit();
 
                 //---------------------------------------------------------------------------------//
                 //------------------- Check SCM and PCB are mutually consistent--------------------//
@@ -208,7 +228,8 @@ namespace eCadstar_MAN_DOCs
                 if (indices.Count < 2)
                 {
                     MessageBox.Show("No Fiducial pair found while searching the PCB for \"FIDxy\". Abandoning.", "Problem found...");
-                    Application.Exit();
+                    return;
+                    //Application.Exit();
                 }
                 if (sNotP.Count > 0 || pNotS.Count > 0)
                 {
@@ -233,44 +254,45 @@ namespace eCadstar_MAN_DOCs
                     // Record in log file...
                     problemList.Add("Inconsistencies found: " + Environment.NewLine + pcbOnly + scmOnly);
                 }
-
-                //------------------------------------------------------------------------------------//
-                //                      Create an XYP file?                                           //
-                //------------------------------------------------------------------------------------//
-
-                if (checkedListBox1.GetItemCheckState(1) == CheckState.Checked)
+                if (createXYP)
                 {
-                    //---------------------------------------------------------------------------------//
-                    //------------------- Stitch together the required data for each XYROT item--------//
-                    //---------------------------------------------------------------------------------//
+                    //------------------------------------------------------------------------------------//
+                    //                      Create an XYP file                                            //
+                    //------------------------------------------------------------------------------------//
 
-                    List<string> lines = new List<string>();
-                    string assemblyNo = tbPCBA.Text;
-
-                    foreach (DataRow row in dtComponents.Rows)
+                    if (checkedListBox1.GetItemCheckState(1) == CheckState.Checked)
                     {
-                        // Reject non-DDM parts, except the FID's...
-                        if (!row["Reference_designator"].ToString().StartsWith("FID"))
+                        //---------------------------------------------------------------------------------//
+                        //------------------- Stitch together the required data for each XYROT item--------//
+                        //---------------------------------------------------------------------------------//
+
+                        List<string> lines = new List<string>();
+                        string assemblyNo = tbPCBA.Text;
+
+                        foreach (DataRow row in dtComponents.Rows)
                         {
-                            // Allow test points...
-                            if (row["Ddm_Part"].ToString() == "No" &&
-                                    !row["Reference_designator"].ToString().StartsWith("TP")) continue;
-
-                            // Reject NO-FIT parts...
-
-                            string refDes = row["Reference_designator"].ToString();
-
-                            DataRow symbolRow = dtSymbols.AsEnumerable()
-                           .First(r => r.Field<string>("Reference Designator") == refDes);
-
-                            bool notFitted = symbolRow["Fitted"].ToString().ToUpper() == "NO";
-                            if (notFitted)
+                            // Reject non-DDM parts, except the FID's...
+                            if (!row["Reference_designator"].ToString().StartsWith("FID"))
                             {
-                                continue;
-                            }
-                        }
+                                // Allow test points...
+                                if (row["Ddm_Part"].ToString() == "No" &&
+                                        !row["Reference_designator"].ToString().StartsWith("TP")) continue;
 
-                        List<string> temporaryList = new List<string>()
+                                // Reject NO-FIT parts...
+
+                                string refDes = row["Reference_designator"].ToString();
+
+                                DataRow symbolRow = dtSymbols.AsEnumerable()
+                               .First(r => r.Field<string>("Reference Designator") == refDes);
+
+                                bool notFitted = symbolRow["Fitted"].ToString().ToUpper() == "NO";
+                                if (notFitted)
+                                {
+                                    continue;
+                                }
+                            }
+
+                            List<string> temporaryList = new List<string>()
                 {
                     row["Reference_designator"].ToString().PadRight(20, ' '),
                     row["Part_name"].ToString().PadRight(20, ' '),
@@ -280,105 +302,111 @@ namespace eCadstar_MAN_DOCs
                     row["Placement_side"].ToString()
                 };
 
-                        lines.Add(string.Join("", temporaryList.ToArray()));
-                    }
-
-                    // Order the data alphanumerically (properly!)...
-                    List<string> result = lines.OrderBy(x => PadNumbers(x)).ToList();
-
-                    // Move the Fiducials to the top...
-                    // (quite complicated!)
-                    int index1 = result.FindIndex(x => x.StartsWith("FID"));
-                    if (index1 > 0)
-                    {
-                        var observable = new ObservableCollection<string>(result);
-                        observable.Move(index1, 0);
-                        result = observable.ToList();
-
-                        int index2 = result.FindLastIndex(x => x.StartsWith("FID"));
-                        if (index2 > 0)
-                        {
-                            observable = new ObservableCollection<string>(result);
-                            observable.Move(index2, 0);
-                            result = observable.ToList();
+                            lines.Add(string.Join("", temporaryList.ToArray()));
                         }
-                    }
-                    result.Insert(2, string.Empty);
 
-                    // Create a header...
-                    List<string> header = new List<string>()
+                        // Order the data alphanumerically (properly!)...
+                        List<string> result = lines.OrderBy(x => PadNumbers(x)).ToList();
+
+                        // Move the Fiducials to the top...
+                        // (quite complicated!)
+                        int index1 = result.FindIndex(x => x.StartsWith("FID"));
+                        if (index1 > 0)
+                        {
+                            var observable = new ObservableCollection<string>(result);
+                            observable.Move(index1, 0);
+                            result = observable.ToList();
+
+                            int index2 = result.FindLastIndex(x => x.StartsWith("FID"));
+                            if (index2 > 0)
+                            {
+                                observable = new ObservableCollection<string>(result);
+                                observable.Move(index2, 0);
+                                result = observable.ToList();
+                            }
+                        }
+                        result.Insert(2, string.Empty);
+
+                        // Create a header...
+                        List<string> header = new List<string>()
                 {
                 "DESIGN: " + assemblyNo + "   " + DateTime.Now,
                 string.Empty,
                 "Reference".PadRight(20, ' ') + "Part".PadRight(20, ' ') + "x".PadRight(20, ' ') + "y".PadRight(20, ' ') + "Angle".PadRight(20, ' ') + "Side", string.Empty};
-                    xypFilePath = Path.Combine(targetDirectory, assemblyNo + "-" + numPcbaNo.Value.ToString() + "-XYP.txt");
-                    File.WriteAllLines(xypFilePath, header);
-                    File.AppendAllLines(xypFilePath, result);
-                }
-
-                //------------------------------------------------------------------------------------//
-                //                      Create a DDM BOM file?                                        //
-                //------------------------------------------------------------------------------------//
-
-                if (checkedListBox1.GetItemCheckState(0) == CheckState.Checked)
-                {
-                    List<string> lines = new List<string>();
-                    string assemblyNo = tbPCBA.Text;
-                    string pcbNumber = tbPCB.Text;
-
-                    lines.Add(assemblyNo);
-                    lines.Add(DateTime.Now.ToShortDateString());
-                    lines.Add(string.Empty);
-                    lines.Add("Part Name");
-                    lines.Add(string.Empty);
-                    lines.Add(string.Empty);
-                    lines.Add(string.Empty);
-                    lines.Add(string.Empty);
-                    lines.Add(string.Empty);
-                    lines.Add(string.Empty);
-
-                    foreach (DataRow row in dtComponents.Rows)
-                    {
-                        // Reject non-DDM parts, except the FID's...
-                        if (!row["Reference_designator"].ToString().StartsWith("FID"))
-                        {
-                            if (row["Ddm_Part"].ToString() == "No") continue;
-
-                            // Reject NO-FIT parts...
-
-                            string refDes = row["Reference_designator"].ToString();
-
-                            DataRow symbolRow = dtSymbols.AsEnumerable()
-                           .First(r => r.Field<string>("Reference Designator") == refDes);
-
-                            bool notFitted = symbolRow["Fitted"].ToString().ToUpper() == "NO";
-                            if (notFitted)
-                            {
-                                continue;
-                            }
-
-                            //                     Check components vs. DDM                                       //
-
-                            string part = row["Part_name"].ToString();
-                            bool existsInDdm = DDM.ExistsInDdm(connectionStringDDM, part);
-                            if (!existsInDdm)
-                            {
-                                string warning = "WARNING: " + part + " is not in DDM or a part with the same number & issue is flagged as deleted";
-                                if (!problemList.Contains(warning))
-                                    problemList.Add(warning);
-                            }
-
-                            lines.Add(part);
-                            lines.Add(string.Empty);
-                            lines.Add(row["Reference_designator"].ToString());
-                            lines.Add("SMT");
-                            lines.Add(string.Empty);
-                            lines.Add(string.Empty);
-                        }
+                        xypFilePath = Path.Combine(targetDirectory, assemblyNo + "-" + numPcbaNo.Value.ToString() + "-XYP.txt");
+                        File.WriteAllLines(xypFilePath, header);
+                        File.AppendAllLines(xypFilePath, result);
                     }
 
-                    File.AppendAllLines(Path.Combine(targetDirectory, assemblyNo + "-" + numPcbaNo.Value.ToString() + "-LOG.txt"), problemList);
-                    File.AppendAllLines(Path.Combine(targetDirectory, assemblyNo + "-" + numPcbaNo.Value.ToString() + "-BOM.rep"), lines);
+                }
+
+                if (createBOM)
+                {
+                    //------------------------------------------------------------------------------------//
+                    //                      Create a DDM BOM file?                                        //
+                    //------------------------------------------------------------------------------------//
+
+                    if (checkedListBox1.GetItemCheckState(0) == CheckState.Checked)
+                    {
+                        List<string> lines = new List<string>();
+                        string assemblyNo = tbPCBA.Text;
+                        string pcbNumber = tbPCB.Text;
+
+                        lines.Add(assemblyNo);
+                        lines.Add(DateTime.Now.ToShortDateString());
+                        lines.Add(string.Empty);
+                        lines.Add("Part Name");
+                        lines.Add(string.Empty);
+                        lines.Add(string.Empty);
+                        lines.Add(string.Empty);
+                        lines.Add(string.Empty);
+                        lines.Add(string.Empty);
+                        lines.Add(string.Empty);
+
+                        foreach (DataRow row in dtComponents.Rows)
+                        {
+                            // Reject non-DDM parts, except the FID's...
+                            if (!row["Reference_designator"].ToString().StartsWith("FID"))
+                            {
+                                if (row["Ddm_Part"].ToString() == "No") continue;
+
+                                // Reject NO-FIT parts...
+
+                                string refDes = row["Reference_designator"].ToString();
+
+                                DataRow symbolRow = dtSymbols.AsEnumerable()
+                               .First(r => r.Field<string>("Reference Designator") == refDes);
+
+                                bool notFitted = symbolRow["Fitted"].ToString().ToUpper() == "NO";
+                                if (notFitted)
+                                {
+                                    continue;
+                                }
+
+                                //                     Check components vs. DDM                                       //
+
+                                string part = row["Part_name"].ToString();
+                                bool existsInDdm = DDM.ExistsInDdm(connectionStringDDM, part);
+                                if (!existsInDdm)
+                                {
+                                    string warning = "WARNING: " + part + " is not in DDM or a part with the same number & issue is flagged as deleted";
+                                    if (!problemList.Contains(warning))
+                                        problemList.Add(warning);
+                                }
+
+                                lines.Add(part);
+                                lines.Add(string.Empty);
+                                lines.Add(row["Reference_designator"].ToString());
+                                lines.Add("SMT");
+                                lines.Add(string.Empty);
+                                lines.Add(string.Empty);
+                            }
+                        }
+
+                        File.AppendAllLines(Path.Combine(targetDirectory, assemblyNo + "-" + numPcbaNo.Value.ToString() + "-LOG.txt"), problemList);
+                        File.AppendAllLines(Path.Combine(targetDirectory, assemblyNo + "-" + numPcbaNo.Value.ToString() + "-BOM.rep"), lines);
+                    }
+
                 }
             }
 
@@ -386,13 +414,13 @@ namespace eCadstar_MAN_DOCs
             //                      Create Assembly drawing?                                      //
             //------------------------------------------------------------------------------------//
 
-            if (checkedListBox1.GetItemCheckState(2) == CheckState.Checked)
+            if (createADR)
             {
-                string newFileName = Path.Combine(targetDirectory,  adrName + ".pdf");
+                string newFileName = Path.Combine(targetDirectory, adrName + ".pdf");
                 string defaultFileName = Path.Combine(targetDirectory, "A000xxx-y-ADR.pdf");
 
-                pcbEditor.ExecuteMacro(@"( playback-macro filepath:""C:/Users/mike.jones/Documents/eCadstar/SETTINGS_local/Macros/ADRtb.txt"" )");
-                try
+                pcbEditor.ExecuteMacro(mjResources.ADR_Plot_settings);
+                                try
                 {
                     File.Move(defaultFileName, newFileName);
                 }
@@ -401,7 +429,7 @@ namespace eCadstar_MAN_DOCs
                     MessageBox.Show("Check for eCadstar dialog");
                     File.Move(defaultFileName, newFileName);
                 }
-
+                
                 if (File.Exists(xypFilePath) && File.Exists(newFileName))
                 {
                     // Zip it with the XYP (if it exists)
@@ -434,7 +462,7 @@ namespace eCadstar_MAN_DOCs
             //                      Create Gerbers?                                               //
             //------------------------------------------------------------------------------------//
 
-            if (checkedListBox1.GetItemCheckState(3) == CheckState.Checked)
+            if (createGBR)
             {
                 pcbEditor.ExecuteMacro(@"( playback-macro filepath:""C:/Users/mike.jones/Documents/eCadstar/SETTINGS_local/Macros/Gerbers.txt"" )");
             }
@@ -443,7 +471,7 @@ namespace eCadstar_MAN_DOCs
             //                      Create Drill file?                                               //
             //------------------------------------------------------------------------------------//
 
-            if (checkedListBox1.GetItemCheckState(4) == CheckState.Checked)
+            if (createDRILL)
             {
                 pcbEditor.ExecuteMacro(@"( playback-macro filepath:""A:/Settings/Macros/Drill.txt"" )");
             }
@@ -452,27 +480,17 @@ namespace eCadstar_MAN_DOCs
             //                      Create CDR file?                                               //
             //------------------------------------------------------------------------------------//
 
-            if (checkedListBox1.GetItemCheckState(5) == CheckState.Checked)
+            if (createCDR)
             {
-                scmEditor.ExecuteMacro(@"(playback-macro filepath:""C:/Users/mike.jones/Documents/eCadstar/SETTINGS_local/Macros/PDF.txt""");
-                try
-                {
-                File.Move(Path.Combine(targetDirectory, "A000xxx-y-CDR.pdf"), 
-                    Path.Combine(targetDirectory, cdrName + ".pdf"));
-                }
-                catch
-                {
-                    MessageBox.Show("Check for eCadstar dialog");
-                    File.Move(Path.Combine(targetDirectory, "A000xxx-y-CDR.pdf"),
-                        Path.Combine(targetDirectory, cdrName + ".pdf"));
-                }
+                string macroText = mjResources.CDR_Print_settings.Replace("A000xxx-y-CDR", cdrName);
+                scmEditor.ExecuteMacro(macroText);
             }
 
             //------------------------------------------------------------------------------------//
             //                      Zip the CAD files?                                            //
             //------------------------------------------------------------------------------------//
 
-            if (checkedListBox1.GetItemCheckState(6) == CheckState.Checked)
+            if (createCAD)
             {
                 // Copy source files to a temporary folder, else if they are open already, nothing will work.
 
@@ -501,8 +519,8 @@ namespace eCadstar_MAN_DOCs
                         File.Delete(zipArchive);
                     ZipFile.CreateFromDirectory(tmpDirScm, zipArchive, CompressionLevel.Optimal, true);
 
-                        using (ZipArchive archive = ZipFile.Open(zipArchive, ZipArchiveMode.Update))
-                        {
+                    using (ZipArchive archive = ZipFile.Open(zipArchive, ZipArchiveMode.Update))
+                    {
                         var fileInfo = new FileInfo(tmpFilePcb);
                         archive.CreateEntryFromFile(fileInfo.FullName, fileInfo.Name);
                     }
@@ -644,7 +662,7 @@ namespace eCadstar_MAN_DOCs
         {
             return Regex.Replace(input, "[0-9]+", match => match.Value.PadLeft(10, '0'));
         }
-        private bool OpenPCBDesign(ref PCBApplication pcbEditor, string designFile = "")
+        private bool OpenPCBDesign(ref PCBApplication pcbEditor, bool visible, string designFile = "")
         {
             //-----------------------------------------------------------------------------//
             //---------------------- Open the eCadstar PCB --------------------------------//
@@ -665,14 +683,14 @@ namespace eCadstar_MAN_DOCs
             catch (COMException ex)
             {
                 pcbEditor = new PCBApplication();
-                pcbEditor.Visible = true;
+                pcbEditor.Visible = visible;
                 pcbEditor.OpenDesign(designFile);
             }
 
             return true;
         }
 
-        private string OpenScm(ref SchApplication scmEditor, string scmDesignName = "")
+        private string OpenScm(ref SchApplication scmEditor, bool visible, string scmDesignName = "")
         {
             //-----------------------------------------------------------------------------//
             //---------------------- Open the eCadstar SCM --------------------------------//
@@ -692,7 +710,7 @@ namespace eCadstar_MAN_DOCs
                 }
             }
 
-            scmEditor.Visible = false;
+            scmEditor.Visible = visible;
             return scmDesignName;
         }
 

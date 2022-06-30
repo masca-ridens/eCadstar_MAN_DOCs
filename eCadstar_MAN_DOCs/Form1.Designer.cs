@@ -103,11 +103,11 @@ namespace eCadstar_MAN_DOCs
             this.checkedListBox1.FormattingEnabled = true;
             this.checkedListBox1.Items.AddRange(new object[] {
             "Create BOM",
-            "Create Pick\'n\'Place file",
-            "Create Assy drawings",
-            "Create Gerbers",
-            "Create Drill file",
-            "Create CDR pdf",
+            "Create XYP",
+            "Create ADR",
+            "Create GBR",
+            "Create DRILL",
+            "Create CDR",
             "Zip CAD docs"});
             this.checkedListBox1.Location = new System.Drawing.Point(92, 186);
             this.checkedListBox1.Name = "checkedListBox1";
