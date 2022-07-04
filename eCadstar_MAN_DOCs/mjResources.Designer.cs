@@ -80,6 +80,30 @@ namespace eCadstar_MAN_DOCs {
         
         /// <summary>
         ///   Looks up a localized string similar to &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;yes&quot; ?&gt;
+        ///&lt;drill version=&quot;2.0&quot;&gt;
+        ///
+        ///  &lt;unit type=&quot;mm&quot;/&gt;
+        ///
+        ///  &lt;basicSettings&gt;
+        ///    &lt;targetFile path=&quot;C:/Users/mike.jones/Documents/eCadstar/DESIGNS_local/A000268-5-PCB.pdes&quot;/&gt;
+        ///    &lt;outputSettings&gt;
+        ///      &lt;outputFolder path=&quot;C:\Users\mike.jones\AppData\Local\Temp\eCad\Gerbils&quot;/&gt;
+        ///      &lt;dataFile&gt;
+        ///        &lt;suffix enable=&quot;on&quot; string=&quot;fdr&quot;/&gt;
+        ///        &lt;noOutputEmptyData mode=&quot;off&quot;/&gt;
+        ///      &lt;/dataFile&gt;
+        ///      &lt;listFile language=&quot;eng&quot;/&gt;
+        ///    &lt;/outputSettings&gt;
+        ///    &lt;m [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string DrillSettings {
+            get {
+                return ResourceManager.GetString("DrillSettings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;yes&quot; ?&gt;
         ///&lt;photo version=&quot;2.0&quot;&gt;
         ///
         ///  &lt;unit type=&quot;mm&quot;/&gt;

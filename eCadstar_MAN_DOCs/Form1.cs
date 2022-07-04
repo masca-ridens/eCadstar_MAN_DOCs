@@ -461,7 +461,7 @@ namespace eCadstar_MAN_DOCs
 
             if (createGBR)
             {
-                //pcbEditor.ProcessingDialog(false);
+                pcbEditor.ProcessingDialog(false);
 
                 string gerberMacro = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"Resources", "Gerber_macro.txt");
                 string drillMacro = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"Resources", "Drill_macro.txt");
@@ -486,17 +486,16 @@ namespace eCadstar_MAN_DOCs
                 //--------------------- DRILL ------------------------------------------------//
                 //----------------------------------------------------------------------------//
 
-                //string d = "6-layer.drill";
-                //tempCopy = Path.Combine(temporaryFolder, d);  // Copy from RESOURCES
-                //sd = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"Resources", d);
-                //File.Copy(sd, tempCopy, true);
-                //text = File.ReadAllText(Path.Combine(temporaryFolder, d));
-                //text = text.Replace("Gerbils", mfrName);
-                //File.WriteAllText(Path.Combine(temporaryFolder, d), text);
+                tmpMacro = Path.Combine(temporaryFolder, "Drill_macro.txt");
+                tmpSettings = Path.Combine(temporaryFolder, "Drill_dialog.drill");
+                File.WriteAllText(tmpSettings, mjResources.DrillSettings.Replace("Gerbils", mfrName));
+                File.WriteAllText(tmpMacro, @"( export-drill prmfile:""" + tmpSettings + @""" exec )");
 
-                //pcbEditor.ExecuteMacro(@"( playback-macro filepath:""C:/Users/mike.jones/Documents/eCadstar/SETTINGS_local/Macros/Drill.txt"" )");
+                h = @"( playback-macro filepath:""" + @tmpMacro + @""")";
+                pcbEditor.ExecuteMacro(h.Replace(@"\", "/"));
+                pcbEditor.ExecuteMacro(@"( playback-macro filepath:""C:/Users/mike.jones/AppData/Local/Temp/eCad /Drill_macro.txt"")") ;
 
-                //Move2Archive(new string[] { mfrFolderPath }, Path.Combine(targetDirectory, mfrName));
+                Move2Archive(new string[] { mfrFolderPath }, Path.Combine(targetDirectory, mfrName));
             }
 
             if (createCDR)

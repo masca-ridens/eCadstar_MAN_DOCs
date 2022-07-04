@@ -124,6 +124,94 @@
     <value>( print plottername:"PDF" outputfile:"C:/Users/mike.jones/Documents/eCadstar/.mfr/A000xxx-y-CDR.pdf" papersize:4 papersize.x:210 papersize.y:297 direction:"LANDSCAPE" margin.top:0 margin.bottom:0 margin.left:0 margin.right:0 color:"AUTO" coloremphasis:"OFF" clip:"OFF" mirror:"OFF" rotate:0 autoscale:"ON" scale.value:1 autooffset:"ON" offset.x:0 offset.y:0 outputnotfitteditems:"ON" outputunconnectedmark:"OFF" usemoveannotation:"OFF" createbookmark:"OFF" componentbookmark:"OFF" componentpinbookmark:"OFF" netbookmark:"OFF" connectorbookmark:"OFF" compress:"ON" forcedoverwrite:"ON" allsheets )</value>
     <comment>For printing a schematic, all pages, to PDF</comment>
   </data>
+  <data name="DrillSettings" xml:space="preserve">
+    <value>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes" ?&gt;
+&lt;drill version="2.0"&gt;
+
+  &lt;unit type="mm"/&gt;
+
+  &lt;basicSettings&gt;
+    &lt;targetFile path="C:/Users/mike.jones/Documents/eCadstar/DESIGNS_local/A000268-5-PCB.pdes"/&gt;
+    &lt;outputSettings&gt;
+      &lt;outputFolder path="C:\Users\mike.jones\AppData\Local\Temp\eCad\Gerbils"/&gt;
+      &lt;dataFile&gt;
+        &lt;suffix enable="on" string="fdr"/&gt;
+        &lt;noOutputEmptyData mode="off"/&gt;
+      &lt;/dataFile&gt;
+      &lt;listFile language="eng"/&gt;
+    &lt;/outputSettings&gt;
+    &lt;messageSettings&gt;
+      &lt;errorFile output="on" path="C:\Users\mike.jones\Desktop\WiP\Gerbils\errors.txt"/&gt;
+      &lt;warningFile output="on" path="C:\Users\mike.jones\Desktop\WiP\Gerbils\warnings.txt"/&gt;
+    &lt;/messageSettings&gt;
+    &lt;mspecSettings&gt;
+      &lt;ncfFile path="C:\Users\mike.jones\Documents\eCadstar\SETTINGS_local\Manufacture\Drill\Excellon2.ncf"/&gt;
+      &lt;assignCode mode="auto"&gt;
+        &lt;classify type="holeType" valid="off"/&gt;
+        &lt;classify type="slotType" valid="on"/&gt;
+        &lt;classify type="plating" valid="on"/&gt;
+        &lt;classify type="embeddedvia" valid="off"/&gt;
+      &lt;/assignCode&gt;
+    &lt;/mspecSettings&gt;
+    &lt;coordinateSettings&gt;
+      &lt;clipArea clip="off"&gt;
+        &lt;clipAreaStart x="0.00000" y="0.00000"/&gt;
+        &lt;clipAreaEnd x="0.00000" y="0.00000"/&gt;
+      &lt;/clipArea&gt;
+      &lt;origin x="0.00000" y="0.00000"/&gt;
+      &lt;rotate value="0"/&gt;
+      &lt;scale value="1.00000"/&gt;
+      &lt;layout mode="offset" x="0.00000" y="0.00000"/&gt;
+    &lt;/coordinateSettings&gt;
+  &lt;/basicSettings&gt;
+
+  &lt;optionalSettings&gt;
+    &lt;toolpathsortingAttribute sort="n"&gt;
+      &lt;bandWidth value="25.40000"/&gt;
+    &lt;/toolpathsortingAttribute&gt;
+    &lt;testCoupon count="1" timing="0"/&gt;
+  &lt;/optionalSettings&gt;
+
+  &lt;stepSettings&gt;
+    &lt;step name="Drill_data" output="on"&gt;
+      &lt;fromtoAttribute target="from-to"&gt;
+        &lt;fromto from="1" output="on" to="6"/&gt;
+      &lt;/fromtoAttribute&gt;
+      &lt;objectAttribute&gt;
+        &lt;object output="on" type="roundhole"/&gt;
+        &lt;object output="off" type="recthole"/&gt;
+        &lt;object output="on" type="slothole"/&gt;
+        &lt;object output="on" type="padstkroundhole"/&gt;
+        &lt;object output="off" type="padstkrecthole"/&gt;
+        &lt;object output="on" type="padstkslothole"/&gt;
+      &lt;/objectAttribute&gt;
+      &lt;slotHoleAttribute mode="sequential"&gt;
+        &lt;movingRatio value="0.50000"/&gt;
+        &lt;oddDrillHits valid="off"/&gt;
+        &lt;limitCount count="20000"/&gt;
+      &lt;/slotHoleAttribute&gt;
+      &lt;rectHoleAttribute mode="alternate"&gt;
+        &lt;movingRatio value="0.50000"/&gt;
+        &lt;oddDrillHits valid="off"/&gt;
+        &lt;limitCount count="20000"/&gt;
+      &lt;/rectHoleAttribute&gt;
+      &lt;platingAttribute type="both"/&gt;
+      &lt;diameterAttribute target="diameter"&gt;
+        &lt;diameter output="on" value="0.25000"/&gt;
+        &lt;diameter output="on" value="0.40000"/&gt;
+        &lt;diameter output="on" value="1.05000"/&gt;
+        &lt;diameter output="on" value="1.15000"/&gt;
+        &lt;diameter output="off" value="1.60000"/&gt;
+        &lt;diameter output="on" value="2.15000"/&gt;
+        &lt;diameter output="on" value="2.80000"/&gt;
+      &lt;/diameterAttribute&gt;
+      &lt;embeddedviaAttribute output="without" type="both"/&gt;
+      &lt;mirror mode="off"/&gt;
+    &lt;/step&gt;
+  &lt;/stepSettings&gt;
+
+&lt;/drill&gt;</value>
+  </data>
   <data name="GbrSettings" xml:space="preserve">
     <value>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes" ?&gt;
 &lt;photo version="2.0"&gt;
