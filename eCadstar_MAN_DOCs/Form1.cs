@@ -17,13 +17,14 @@ using System.IO.Compression;
 using Aspose.Zip;
 using Aspose.Zip.Saving;
 using System.Security.AccessControl;
+using System.Reflection;
 
 namespace eCadstar_MAN_DOCs
 {
     public partial class Form1 : Form
     {
         readonly string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-        readonly string temporaryFolder = Path.GetTempPath();
+        readonly string temporaryFolder = Path.Combine(Path.GetTempPath(), "eCad");
         readonly string ddmServer = DDM.GetDdmServerFromRegistry();
         string sqlDriver;
         static string connectionStringDDM;
@@ -36,6 +37,9 @@ namespace eCadstar_MAN_DOCs
 
         private void Form1_Load(object sender, EventArgs e)
         {
+
+            Directory.CreateDirectory(temporaryFolder);  // Only created if it doesn't exist
+
             //---------------------------------------------------------------------------//
             //------------------Fetch previously used paths from the Registry-----------//
             //---------------------------------------------------------------------------//
@@ -134,8 +138,19 @@ namespace eCadstar_MAN_DOCs
             string adrName = tbPCBA.Text + "-" + numPcbaNo.Value.ToString() + "-ADR";
             string cdrName = tbPCBA.Text + "-" + numPcbaNo.Value.ToString() + "-CDR";
             string cadName = tbPCBA.Text + "-" + numPcbaNo.Value.ToString() + "-CAD";
+            string bomName = tbPCBA.Text + "-" + numPcbaNo.Value.ToString() + "-BOM";
+            string mfrName = tbPCBA.Text + "-" + numPcbaNo.Value.ToString() + "-MFR";
+            string scmName = tbPCBA.Text + "-" + numPcbaNo.Value.ToString();
+            string pcbName = tbPCBA.Text + "-" + numPcbaNo.Value.ToString();
 
-            string xypFilePath = Path.Combine(targetDirectory, xypName + ".txt");
+            string xypFilePath = Path.Combine(temporaryFolder, xypName + ".txt");
+            string adrFilePath = Path.Combine(temporaryFolder, adrName + ".pdf");
+            string cdrFilePath = Path.Combine(targetDirectory, cdrName + ".txt");
+            string scmFilePath = Path.Combine(temporaryFolder, scmName + ".sdes");
+            string pcbFilePath = Path.Combine(temporaryFolder, pcbName + ".pdes");
+            string bomFilePath = Path.Combine(targetDirectory, bomName + ".txt");
+            string mfrFolderPath = Path.Combine(temporaryFolder, mfrName);
+            string mfrZipFile = Path.Combine(targetDirectory, mfrName) + ".zip";
 
             //----------------------------------------------------------------------------//
             //----------------------------- Pre-flight checks ----------------------------//
@@ -168,12 +183,11 @@ namespace eCadstar_MAN_DOCs
             bool createBOM = checkedListBox1.CheckedItems.Contains("Create BOM");
             bool createXYP = checkedListBox1.CheckedItems.Contains("Create XYP");
             bool createADR = checkedListBox1.CheckedItems.Contains("Create ADR");
-            bool createGBR = checkedListBox1.CheckedItems.Contains("Create GBR");
-            bool createDRILL = checkedListBox1.CheckedItems.Contains("Create DRILL");
+            bool createGBR = checkedListBox1.CheckedItems.Contains("Create GBR & DRILL");
             bool createCDR = checkedListBox1.CheckedItems.Contains("Create CDR");
             bool createCAD = checkedListBox1.CheckedItems.Contains("Zip CAD docs");
 
-            if (createBOM || createXYP || createADR || createGBR || createDRILL)
+            if (createBOM || createXYP || createADR || createGBR || createGBR)
             {
                 //-----------------------------------------------------------------------------//
                 //---------------------- Open the eCadstar PCB design -------------------------//
@@ -208,8 +222,8 @@ namespace eCadstar_MAN_DOCs
                 //if (checkedListBox1.GetItemCheckState(0) == CheckState.Checked
                 //|| checkedListBox1.GetItemCheckState(1) == CheckState.Checked)
                 //{
-                    toolStripStatusLabel1.Text = "Fetching schematic parts";
-                    dtSymbols = GetAllSymbols(scmEditor);
+                toolStripStatusLabel1.Text = "Fetching schematic parts";
+                dtSymbols = GetAllSymbols(scmEditor);
                 //}
 
                 scmEditor.Quit();
@@ -333,11 +347,10 @@ namespace eCadstar_MAN_DOCs
                 "DESIGN: " + assemblyNo + "   " + DateTime.Now,
                 string.Empty,
                 "Reference".PadRight(20, ' ') + "Part".PadRight(20, ' ') + "x".PadRight(20, ' ') + "y".PadRight(20, ' ') + "Angle".PadRight(20, ' ') + "Side", string.Empty};
-                        xypFilePath = Path.Combine(targetDirectory, assemblyNo + "-" + numPcbaNo.Value.ToString() + "-XYP.txt");
+                        //xypFilePath = Path.Combine(targetDirectory, assemblyNo + "-" + numPcbaNo.Value.ToString() + "-XYP.txt");
                         File.WriteAllLines(xypFilePath, header);
                         File.AppendAllLines(xypFilePath, result);
                     }
-
                 }
 
                 if (createBOM)
@@ -382,8 +395,9 @@ namespace eCadstar_MAN_DOCs
                                 {
                                     continue;
                                 }
-
+                                // -----------------------------------------------------------------------------------//
                                 //                     Check components vs. DDM                                       //
+                                // -----------------------------------------------------------------------------------//
 
                                 string part = row["Part_name"].ToString();
                                 bool existsInDdm = DDM.ExistsInDdm(connectionStringDDM, part);
@@ -404,9 +418,8 @@ namespace eCadstar_MAN_DOCs
                         }
 
                         File.AppendAllLines(Path.Combine(targetDirectory, assemblyNo + "-" + numPcbaNo.Value.ToString() + "-LOG.txt"), problemList);
-                        File.AppendAllLines(Path.Combine(targetDirectory, assemblyNo + "-" + numPcbaNo.Value.ToString() + "-BOM.rep"), lines);
+                        File.AppendAllLines(bomFilePath, lines);
                     }
-
                 }
             }
 
@@ -416,69 +429,75 @@ namespace eCadstar_MAN_DOCs
 
             if (createADR)
             {
-                string newFileName = Path.Combine(targetDirectory, adrName + ".pdf");
-                string defaultFileName = Path.Combine(targetDirectory, "A000xxx-y-ADR.pdf");
+                string sd = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+                        @"Resources", "ADRtb.plot");
+                if (File.Exists(sd))
+                {
+                    string tempCopy = Path.Combine(temporaryFolder, "ADRtb.plot");
+                    File.Copy(sd, tempCopy, true);
+                    string text = File.ReadAllText(Path.Combine(temporaryFolder, "ADRtb.plot"));
+                    text = text.Replace("A000xxx-y-ADR.pdf", adrName);
+                    File.WriteAllText(Path.Combine(temporaryFolder, "ADRtb.plot"), text);
 
-                pcbEditor.ExecuteMacro(mjResources.ADR_Plot_settings);
-                                try
-                {
-                    File.Move(defaultFileName, newFileName);
+                    sd = "(plot prmfile:\"" + Path.Combine(temporaryFolder, "ADRtb.plot") + "\")";
+                    sd = sd.Replace("\\", "/");
+                    pcbEditor.ExecuteMacro(sd);
                 }
-                catch
+                if (createXYP)
                 {
-                    MessageBox.Show("Check for eCadstar dialog");
-                    File.Move(defaultFileName, newFileName);
-                }
-                
-                if (File.Exists(xypFilePath) && File.Exists(newFileName))
-                {
-                    // Zip it with the XYP (if it exists)
-                    // Create FileStream for output ZIP archive
-                    using (FileStream zipFile = File.Open(Path.Combine(targetDirectory, adrName + ".zip"), FileMode.Create))
+                    if (IsFileAvailable(xypFilePath) && IsFileAvailable(adrFilePath))
                     {
-                        // File to be added to archive
-                        using (FileStream source1 = File.Open(newFileName, FileMode.Open, FileAccess.Read))
-                        {
-                            // File to be added to archive
-                            using (FileStream source2 = File.Open(xypFilePath, FileMode.Open, FileAccess.Read))
-                            {
-                                using (var archive = new Archive())
-                                {
-                                    // Add files to the archive
-                                    archive.CreateEntry(Path.GetFileName(newFileName), source1);
-                                    archive.CreateEntry(Path.GetFileName(xypFilePath), source2);
-                                    // ZIP the files
-                                    archive.Save(zipFile, new ArchiveSaveOptions() { Encoding = System.Text.Encoding.ASCII, ArchiveComment = "XYP & a combined ADR are compressed in this archive" });
-                                }
-                            }
-                        }
+                        // Zip it with the XYP...
+                        string[] q = new string[] { xypFilePath, adrFilePath };
+                        string zipFile = Path.Combine(targetDirectory, adrName + ".zip");
+                        Move2Archive(q, zipFile);
                     }
-                    File.Delete(xypFilePath);
-                    File.Delete(newFileName);
+                }
+                else
+                {
+                    File.Move(adrFilePath, Path.Combine(targetDirectory, adrName + ".pdf"));
                 }
             }
-
-            //------------------------------------------------------------------------------------//
-            //                      Create Gerbers?                                               //
-            //------------------------------------------------------------------------------------//
 
             if (createGBR)
             {
-                pcbEditor.ExecuteMacro(@"( playback-macro filepath:""C:/Users/mike.jones/Documents/eCadstar/SETTINGS_local/Macros/Gerbers.txt"" )");
+                //pcbEditor.ProcessingDialog(false);
+
+                string gerberMacro = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"Resources", "Gerber_macro.txt");
+                string drillMacro = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"Resources", "Drill_macro.txt");
+                string gerberSettings = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"Resources", "Gerber_dialog.photo");
+                string drillSettings = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"Resources", "Drill_dialog.drill");
+
+                //----------------------------------------------------------------------------//
+                //--------------------- GERBERS ----------------------------------------------//
+                //----------------------------------------------------------------------------//
+
+                string tmpMacro = Path.Combine(temporaryFolder, "Gerber_macro.txt");
+                string tmpSettings = Path.Combine(temporaryFolder, "Gerber_dialog.photo");
+                File.WriteAllText(tmpSettings, mjResources.GbrSettings.Replace("Gerbils", mfrName));
+                File.WriteAllText(tmpMacro, @"( export-photo prmfile:""" + tmpSettings + @""" exec )");
+
+                Directory.CreateDirectory(Path.Combine(temporaryFolder, mfrName));  // Only created if it doesn't exist
+                string h = @"( playback-macro filepath:""" + @tmpMacro + @""")";
+
+                pcbEditor.ExecuteMacro(h.Replace(@"\", "/"));
+
+                //----------------------------------------------------------------------------//
+                //--------------------- DRILL ------------------------------------------------//
+                //----------------------------------------------------------------------------//
+
+                //string d = "6-layer.drill";
+                //tempCopy = Path.Combine(temporaryFolder, d);  // Copy from RESOURCES
+                //sd = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"Resources", d);
+                //File.Copy(sd, tempCopy, true);
+                //text = File.ReadAllText(Path.Combine(temporaryFolder, d));
+                //text = text.Replace("Gerbils", mfrName);
+                //File.WriteAllText(Path.Combine(temporaryFolder, d), text);
+
+                //pcbEditor.ExecuteMacro(@"( playback-macro filepath:""C:/Users/mike.jones/Documents/eCadstar/SETTINGS_local/Macros/Drill.txt"" )");
+
+                //Move2Archive(new string[] { mfrFolderPath }, Path.Combine(targetDirectory, mfrName));
             }
-
-            //------------------------------------------------------------------------------------//
-            //                      Create Drill file?                                               //
-            //------------------------------------------------------------------------------------//
-
-            if (createDRILL)
-            {
-                pcbEditor.ExecuteMacro(@"( playback-macro filepath:""A:/Settings/Macros/Drill.txt"" )");
-            }
-
-            //------------------------------------------------------------------------------------//
-            //                      Create CDR file?                                               //
-            //------------------------------------------------------------------------------------//
 
             if (createCDR)
             {
@@ -492,42 +511,62 @@ namespace eCadstar_MAN_DOCs
 
             if (createCAD)
             {
-                // Copy source files to a temporary folder, else if they are open already, nothing will work.
+                string[] q = new string[] { tbSchematicPath.Text, tbPcbPath.Text };
+                Move2Archive(q, mfrZipFile);
+            }
+            bRun.Enabled = true;
+        }
+        private bool Move2Archive(string[] source, string target)
+        {
+            // Create a directory in the TEMP area to put the files/folders...
+            string tmpDir = Path.Combine(temporaryFolder, Path.GetFileNameWithoutExtension(target));
+            Directory.CreateDirectory(tmpDir);
 
-                string filePcb = tbPcbPath.Text;
-                string shareFolder = Path.Combine(temporaryFolder, "eCad");
-                string tmpFilePcb = Path.Combine(shareFolder, Path.GetFileName(filePcb));
+            string tgtDir = Path.GetDirectoryName(target);
 
-                // Copy source files to TEMP so we don't get conflicts with open files...
+            // Pre-flight checks...
 
-                Directory.CreateDirectory(shareFolder);  // Only created if it doesn't exist
-                File.Copy(filePcb, tmpFilePcb, true);
+            if (!Directory.Exists(tmpDir.ToString()))
+                return false;
+            if (!Directory.Exists(tgtDir.ToString()))
+                return false;
 
-                string dirScm = Path.GetDirectoryName(tbSchematicPath.Text);
-                if (!dirScm.EndsWith(sepChar))
-                    dirScm += sepChar;
+            // Move everything to our new temp area...
 
-                DirectoryInfo di = new DirectoryInfo(tbSchematicPath.Text);
-                string tmpDirScm = Path.Combine(shareFolder, di.Parent.Name);
-                CopyDirectory(dirScm, tmpDirScm, true);
+            foreach (string s in source)
+            {
+                bool IsDirectory = false;
+                FileAttributes attr = File.GetAttributes(s);
+                if ((attr & FileAttributes.Directory) == FileAttributes.Directory)
+                    IsDirectory = true;
 
-                if (File.Exists(tbSchematicPath.Text) && File.Exists(filePcb))
+                if (IsDirectory)
                 {
-                    string zipArchive = Path.Combine(targetDirectory, cadName + ".zip");
+                    if (!Directory.Exists(s))
+                        return false;
 
-                    if (File.Exists(zipArchive))
-                        File.Delete(zipArchive);
-                    ZipFile.CreateFromDirectory(tmpDirScm, zipArchive, CompressionLevel.Optimal, true);
+                    // Copy source directories to TEMP so we don't get conflicts...
 
-                    using (ZipArchive archive = ZipFile.Open(zipArchive, ZipArchiveMode.Update))
-                    {
-                        var fileInfo = new FileInfo(tmpFilePcb);
-                        archive.CreateEntryFromFile(fileInfo.FullName, fileInfo.Name);
-                    }
+                    CopyDirectory(s, tmpDir, true);
+                }
+                else
+                {
+                    if (!File.Exists(s))
+                        return false;
+
+                    // Copy source files to TEMP so we don't get conflicts with open files...
+
+                    File.Copy(s, Path.Combine(tmpDir.ToString(), Path.GetFileName(s)), true);
                 }
             }
 
-            bRun.Enabled = true;
+            if (File.Exists(target))
+                File.Delete(target);
+
+            // Zip this new directory to the target then tidy up...
+            ZipFile.CreateFromDirectory(tmpDir, target);
+            Directory.Delete(tmpDir, true);
+            return true;
         }
         private void bMpns_Click(object sender, EventArgs e)
         {
@@ -834,6 +873,23 @@ namespace eCadstar_MAN_DOCs
                 }
             }
         }
-
+        private bool IsFileAvailable(string p)
+        {
+            if (!File.Exists(p))
+                return false;
+            using (var fs = new FileStream(p, FileMode.Open))
+            {
+                bool canRead = fs.CanRead;
+                bool canWrite = fs.CanWrite;
+                if (!canRead) return false;
+            }
+            using (var fs = File.Open(p, FileMode.Open))
+            {
+                var canRead = fs.CanRead;
+                var canWrite = fs.CanWrite;
+                if (!canRead) return false;
+            }
+            return true;
+        }
     }
 }

@@ -105,8 +105,7 @@ namespace eCadstar_MAN_DOCs
             "Create BOM",
             "Create XYP",
             "Create ADR",
-            "Create GBR",
-            "Create DRILL",
+            "Create GBR & DRILL",
             "Create CDR",
             "Zip CAD docs"});
             this.checkedListBox1.Location = new System.Drawing.Point(92, 186);

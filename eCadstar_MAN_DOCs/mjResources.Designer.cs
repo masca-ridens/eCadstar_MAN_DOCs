@@ -77,5 +77,29 @@ namespace eCadstar_MAN_DOCs {
                 return ResourceManager.GetString("CDR_Print_settings", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;yes&quot; ?&gt;
+        ///&lt;photo version=&quot;2.0&quot;&gt;
+        ///
+        ///  &lt;unit type=&quot;mm&quot;/&gt;
+        ///
+        ///  &lt;basicSettings&gt;
+        ///    &lt;targetFile path=&quot;C:\Users\mike.jones\Documents\eCadstar\DESIGNS_local\A000268-5-PCB.pdes&quot;/&gt;
+        ///    &lt;outputSettings&gt;
+        ///      &lt;outputFolder path=&quot;C:\Users\mike.jones\AppData\Local\Temp\eCad\Gerbils&quot;/&gt;
+        ///      &lt;dataFile&gt;
+        ///        &lt;suffix enable=&quot;on&quot; string=&quot;fph&quot;/&gt;
+        ///        &lt;noOutputEmptyData mode=&quot;off&quot;/&gt;
+        ///      &lt;/dataFile&gt;
+        ///      &lt;listFile language=&quot;eng&quot;/&gt;
+        ///    &lt;/outputSettings&gt;
+        ///    &lt;m [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string GbrSettings {
+            get {
+                return ResourceManager.GetString("GbrSettings", resourceCulture);
+            }
+        }
     }
 }

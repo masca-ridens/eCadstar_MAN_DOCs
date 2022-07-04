@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<drill version="2.0">
+
+  <unit type="mm"/>
+
+  <basicSettings>
+    <targetFile path="C:/Users/mike.jones/Documents/eCadstar/DESIGNS_local/A000268-5-PCB.pdes"/>
+    <outputSettings>
+      <outputFolder path="C:\Users\mike.jones\AppData\Local\Temp\eCad\Gerbils"/>
+      <dataFile>
+        <suffix enable="on" string="fdr"/>
+        <noOutputEmptyData mode="off"/>
+      </dataFile>
+      <listFile language="eng"/>
+    </outputSettings>
+    <messageSettings>
+      <errorFile output="on" path="C:\Users\mike.jones\Desktop\WiP\Gerbils\errors.txt"/>
+      <warningFile output="on" path="C:\Users\mike.jones\Desktop\WiP\Gerbils\warnings.txt"/>
+    </messageSettings>
+    <mspecSettings>
+      <ncfFile path="C:\Users\mike.jones\Documents\eCadstar\SETTINGS_local\Manufacture\Drill\Excellon2.ncf"/>
+      <assignCode mode="auto">
+        <classify type="holeType" valid="off"/>
+        <classify type="slotType" valid="on"/>
+        <classify type="plating" valid="on"/>
+        <classify type="embeddedvia" valid="off"/>
+      </assignCode>
+    </mspecSettings>
+    <coordinateSettings>
+      <clipArea clip="off">
+        <clipAreaStart x="0.00000" y="0.00000"/>
+        <clipAreaEnd x="0.00000" y="0.00000"/>
+      </clipArea>
+      <origin x="0.00000" y="0.00000"/>
+      <rotate value="0"/>
+      <scale value="1.00000"/>
+      <layout mode="offset" x="0.00000" y="0.00000"/>
+    </coordinateSettings>
+  </basicSettings>
+
+  <optionalSettings>
+    <toolpathsortingAttribute sort="n">
+      <bandWidth value="25.40000"/>
+    </toolpathsortingAttribute>
+    <testCoupon count="1" timing="0"/>
+  </optionalSettings>
+
+  <stepSettings>
+    <step name="Drill_data" output="on">
+      <fromtoAttribute target="from-to">
+        <fromto from="1" output="on" to="6"/>
+      </fromtoAttribute>
+      <objectAttribute>
+        <object output="on" type="roundhole"/>
+        <object output="off" type="recthole"/>
+        <object output="on" type="slothole"/>
+        <object output="on" type="padstkroundhole"/>
+        <object output="off" type="padstkrecthole"/>
+        <object output="on" type="padstkslothole"/>
+      </objectAttribute>
+      <slotHoleAttribute mode="sequential">
+        <movingRatio value="0.50000"/>
+        <oddDrillHits valid="off"/>
+        <limitCount count="20000"/>
+      </slotHoleAttribute>
+      <rectHoleAttribute mode="alternate">
+        <movingRatio value="0.50000"/>
+        <oddDrillHits valid="off"/>
+        <limitCount count="20000"/>
+      </rectHoleAttribute>
+      <platingAttribute type="both"/>
+      <diameterAttribute target="diameter">
+        <diameter output="on" value="0.25000"/>
+        <diameter output="on" value="0.40000"/>
+        <diameter output="on" value="1.05000"/>
+        <diameter output="on" value="1.15000"/>
+        <diameter output="off" value="1.60000"/>
+        <diameter output="on" value="2.15000"/>
+        <diameter output="on" value="2.80000"/>
+      </diameterAttribute>
+      <embeddedviaAttribute output="without" type="both"/>
+      <mirror mode="off"/>
+    </step>
+  </stepSettings>
+
+</drill>
