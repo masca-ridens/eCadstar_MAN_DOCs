@@ -18,11 +18,36 @@ using Aspose.Zip;
 using Aspose.Zip.Saving;
 using System.Security.AccessControl;
 using System.Reflection;
+using System.Diagnostics;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace eCadstar_MAN_DOCs
 {
     public partial class Form1 : Form
     {
+        // Some dll's I will need, to intercept 3rd party Windows...
+        //-------------------------------------------------------------------------------------------------//
+        [DllImport("User32")]
+        private static extern int SetForegroundWindow(IntPtr hwnd);
+        delegate bool EnumThreadDelegate(IntPtr hWnd, IntPtr lParam);
+
+        [DllImport("user32.dll")]
+        static extern bool EnumThreadWindows(int dwThreadId, EnumThreadDelegate lpfn, IntPtr lParam);
+        private const uint WM_GETTEXT = 0x000D;
+        private const int WM_GETTEXTLENGTH = 0x000E;
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, int wParam, StringBuilder lParam);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern IntPtr SendMessage(int hWnd, int Msg, int wparam, int lparam);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        static extern int PostMessage(int hWnd, int msg, int wParam, int lParam);
+        const int WM_CLOSE = 16;
+
+        // -------------------------------------------------------------------------------------------------//
         readonly string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
         readonly string temporaryFolder = Path.Combine(Path.GetTempPath(), "eCad");
         readonly string ddmServer = DDM.GetDdmServerFromRegistry();
@@ -480,7 +505,19 @@ namespace eCadstar_MAN_DOCs
                 Directory.CreateDirectory(Path.Combine(temporaryFolder, mfrName));  // Only created if it doesn't exist
                 string h = @"( playback-macro filepath:""" + @tmpMacro + @""")";
 
-                pcbEditor.ExecuteMacro(h.Replace(@"\", "/"));
+                var t1 = Task.Run(() => pcbEditor.ExecuteMacro(h.Replace(@"\", "/")));
+                t1.Wait();
+
+                // !!!!!!!!!!!!!!!!!!!!!!! need to detect when it is clear to continue, i.e. dialogs closed !!!!!!!!!!!!!!!!!!!
+                // eCadstar fails to respond to Windows message pump until plotting is complete
+                // Use this to find out when it is safe to continue
+
+                GiveFocus("eCS_pcb");
+                IntPtr hWnd = Find3rdPartyDialog("eCS_pcb", "Output (Photo Data)");
+                PostMessage((int)hWnd, WM_CLOSE, 0, 0);
+
+                hWnd = Find3rdPartyDialog("eCS_pcb", "Information");
+                PostMessage((int)hWnd, WM_CLOSE, 0, 0);
 
                 //----------------------------------------------------------------------------//
                 //--------------------- DRILL ------------------------------------------------//
@@ -488,14 +525,11 @@ namespace eCadstar_MAN_DOCs
 
                 tmpMacro = Path.Combine(temporaryFolder, "Drill_macro.txt");
                 tmpSettings = Path.Combine(temporaryFolder, "Drill_dialog.drill");
-                File.WriteAllText(tmpSettings, mjResources.DrillSettings.Replace("Gerbils", mfrName));
                 File.WriteAllText(tmpMacro, @"( export-drill prmfile:""" + tmpSettings + @""" exec )");
 
                 h = @"( playback-macro filepath:""" + @tmpMacro + @""")";
-                pcbEditor.ExecuteMacro(h.Replace(@"\", "/"));
-                pcbEditor.ExecuteMacro(@"( playback-macro filepath:""C:/Users/mike.jones/AppData/Local/Temp/eCad /Drill_macro.txt"")") ;
-
-                Move2Archive(new string[] { mfrFolderPath }, Path.Combine(targetDirectory, mfrName));
+                //pcbEditor.ExecuteMacro(h.Replace(@"\", "/"));
+                //Move2Archive(new string[] { mfrFolderPath }, Path.Combine(targetDirectory, mfrName));
             }
 
             if (createCDR)
@@ -889,6 +923,48 @@ namespace eCadstar_MAN_DOCs
                 if (!canRead) return false;
             }
             return true;
+        }
+
+        private void GiveFocus(string processName)
+        {
+            Process[] prcssArray = Process.GetProcessesByName(processName);
+            if (prcssArray.Length > 0)
+                SetForegroundWindow(prcssArray[0].MainWindowHandle);
+        }
+        static IEnumerable<IntPtr> EnumerateProcessWindowHandles(int processId)
+        {
+            var handles = new List<IntPtr>();
+
+            foreach (ProcessThread thread in Process.GetProcessById(processId).Threads) EnumThreadWindows(thread.Id,
+                    (hWnd, lParam) => { handles.Add(hWnd); return true; }, IntPtr.Zero);
+
+            return handles;
+        }
+        private IntPtr Find3rdPartyDialog(string processName, string targetTitle)
+        {
+            int i = 0;
+            foreach (var handle in EnumerateProcessWindowHandles(Process.GetProcessesByName(processName).First().Id))
+            {
+                //if (i++ > 20) return false;
+                string banner = GetControlText(handle);
+                if (banner.Contains(targetTitle)) return handle;
+            }
+            return (IntPtr)(-1);
+        }
+        public string GetControlText(IntPtr hWnd)
+        {
+            // Get the size of the string required to hold the window title (including trailing null.) 
+            Int32 titleSize = SendMessage((int)hWnd, WM_GETTEXTLENGTH, 0, 0).ToInt32();
+
+            // If titleSize is 0, there is no title so return an empty string (or null)
+            if (titleSize == 0)
+                return String.Empty;
+
+            StringBuilder title = new StringBuilder(titleSize + 1);
+
+            SendMessage(hWnd, (int)WM_GETTEXT, title.Capacity, title);
+
+            return title.ToString();
         }
     }
 }
