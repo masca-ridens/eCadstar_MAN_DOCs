@@ -14,9 +14,6 @@ using DDMlib;
 using Windows_lib;
 using Maths_lib;
 using System.IO.Compression;
-using Aspose.Zip;
-using Aspose.Zip.Saving;
-using System.Security.AccessControl;
 using System.Reflection;
 using System.Diagnostics;
 using System.Text;
@@ -26,28 +23,10 @@ namespace eCadstar_MAN_DOCs
 {
     public partial class Form1 : Form
     {
-        // Some dll's I will need, to intercept 3rd party Windows...
-        //-------------------------------------------------------------------------------------------------//
-        [DllImport("User32")]
-        private static extern int SetForegroundWindow(IntPtr hwnd);
-        delegate bool EnumThreadDelegate(IntPtr hWnd, IntPtr lParam);
+        // ------------------------------------------------------------------------------------------------ //
+        //                  Some constants and variables applicable throughout                              //
+        // ------------------------------------------------------------------------------------------------ //
 
-        [DllImport("user32.dll")]
-        static extern bool EnumThreadWindows(int dwThreadId, EnumThreadDelegate lpfn, IntPtr lParam);
-        private const uint WM_GETTEXT = 0x000D;
-        private const int WM_GETTEXTLENGTH = 0x000E;
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto)]
-        static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, int wParam, StringBuilder lParam);
-
-        [DllImport("user32.dll", SetLastError = true)]
-        public static extern IntPtr SendMessage(int hWnd, int Msg, int wparam, int lparam);
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto)]
-        static extern int PostMessage(int hWnd, int msg, int wParam, int lParam);
-        const int WM_CLOSE = 16;
-
-        // -------------------------------------------------------------------------------------------------//
         readonly string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
         readonly string temporaryFolder = Path.Combine(Path.GetTempPath(), "eCad");
         readonly string ddmServer = DDM.GetDdmServerFromRegistry();
@@ -55,6 +34,13 @@ namespace eCadstar_MAN_DOCs
         static string connectionStringDDM;
         List<string> problemList = new List<string>();
         readonly string sepChar = Path.DirectorySeparatorChar.ToString();
+
+        // -------------------- Some eCadstar parameters -------------------------------------------------//
+
+        Process eCPcbProcessNumber;
+        string eCPcbProcessName = "eCS_pcb";
+        IntPtr eCPcbMainWindowHandle;
+
         public Form1()
         {
             InitializeComponent();
@@ -66,7 +52,7 @@ namespace eCadstar_MAN_DOCs
             Directory.CreateDirectory(temporaryFolder);  // Only created if it doesn't exist
 
             //---------------------------------------------------------------------------//
-            //------------------Fetch previously used paths from the Registry-----------//
+            //------------------Fetch previously used paths from the Registry------------//
             //---------------------------------------------------------------------------//
 
             RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\MySettings");
@@ -156,6 +142,8 @@ namespace eCadstar_MAN_DOCs
         private void Run_Click(object sender, EventArgs e)
         {
             string targetDirectory = tbOutputFolder.Text;
+            if (string.IsNullOrEmpty(targetDirectory))
+                MessageBox.Show("Provide a valid directory for the output files");
             if (!targetDirectory.EndsWith(sepChar))
                 targetDirectory += sepChar;
 
@@ -219,6 +207,10 @@ namespace eCadstar_MAN_DOCs
                 //-----------------------------------------------------------------------------//
 
                 bool alreadyOpenPCB = OpenPCBDesign(ref pcbEditor, true, tbPcbPath.Text);
+                Process[] p = Process.GetProcessesByName(eCPcbProcessName);
+                eCPcbProcessNumber = p[0];
+                eCPcbProcessNumber.WaitForInputIdle();
+                eCPcbMainWindowHandle = eCPcbProcessNumber.MainWindowHandle;
             }
 
             if (createBOM || createXYP || createCDR)
@@ -464,9 +456,25 @@ namespace eCadstar_MAN_DOCs
                     text = text.Replace("A000xxx-y-ADR.pdf", adrName);
                     File.WriteAllText(Path.Combine(temporaryFolder, "ADRtb.plot"), text);
 
+                    List<List<IntPtr>> handleList = new List<List<IntPtr>>();
+                    List<IntPtr> newWindows = Windows.FindNewWindows(eCPcbProcessName, ref handleList);
+
                     sd = "(plot prmfile:\"" + Path.Combine(temporaryFolder, "ADRtb.plot") + "\")";
                     sd = sd.Replace("\\", "/");
-                    pcbEditor.ExecuteMacro(sd);
+                    var t = Task.Run(() => pcbEditor.ExecuteMacro(sd));
+                    t.Wait(999);
+
+                    // Upon completion, expect a single window announcing success...
+                    Stopwatch sw = Stopwatch.StartNew();
+                    
+                    while(sw.ElapsedMilliseconds < 9999)
+                    {
+                        newWindows = Windows.FindNewWindows(eCPcbProcessName, ref handleList);
+                        if (newWindows.Count > 0)
+                        {
+                            Windows.CloseWindowByHandle(newWindows[0]);
+                        }
+                    }
                 }
                 if (createXYP)
                 {
@@ -512,12 +520,14 @@ namespace eCadstar_MAN_DOCs
                 // eCadstar fails to respond to Windows message pump until plotting is complete
                 // Use this to find out when it is safe to continue
 
-                GiveFocus("eCS_pcb");
-                IntPtr hWnd = Find3rdPartyDialog("eCS_pcb", "Output (Photo Data)");
-                PostMessage((int)hWnd, WM_CLOSE, 0, 0);
+                //GiveFocus(eCPcbProcessName);
+                //IntPtr hWnd = Find3rdPartyDialog(eCPcbProcessName, "eCADSTAR PCB Editor");
+                //PostMessage((int)hWnd, WM_CLOSE, 0, 0);
 
-                hWnd = Find3rdPartyDialog("eCS_pcb", "Information");
-                PostMessage((int)hWnd, WM_CLOSE, 0, 0);
+                // Close the INFORMATION dialogue...
+
+                //hWnd = Find3rdPartyDialog(eCPcbProcessName, "Information");
+                //PostMessage((int)hWnd, WM_CLOSE, 0, 0);
 
                 //----------------------------------------------------------------------------//
                 //--------------------- DRILL ------------------------------------------------//
@@ -923,48 +933,6 @@ namespace eCadstar_MAN_DOCs
                 if (!canRead) return false;
             }
             return true;
-        }
-
-        private void GiveFocus(string processName)
-        {
-            Process[] prcssArray = Process.GetProcessesByName(processName);
-            if (prcssArray.Length > 0)
-                SetForegroundWindow(prcssArray[0].MainWindowHandle);
-        }
-        static IEnumerable<IntPtr> EnumerateProcessWindowHandles(int processId)
-        {
-            var handles = new List<IntPtr>();
-
-            foreach (ProcessThread thread in Process.GetProcessById(processId).Threads) EnumThreadWindows(thread.Id,
-                    (hWnd, lParam) => { handles.Add(hWnd); return true; }, IntPtr.Zero);
-
-            return handles;
-        }
-        private IntPtr Find3rdPartyDialog(string processName, string targetTitle)
-        {
-            int i = 0;
-            foreach (var handle in EnumerateProcessWindowHandles(Process.GetProcessesByName(processName).First().Id))
-            {
-                //if (i++ > 20) return false;
-                string banner = GetControlText(handle);
-                if (banner.Contains(targetTitle)) return handle;
-            }
-            return (IntPtr)(-1);
-        }
-        public string GetControlText(IntPtr hWnd)
-        {
-            // Get the size of the string required to hold the window title (including trailing null.) 
-            Int32 titleSize = SendMessage((int)hWnd, WM_GETTEXTLENGTH, 0, 0).ToInt32();
-
-            // If titleSize is 0, there is no title so return an empty string (or null)
-            if (titleSize == 0)
-                return String.Empty;
-
-            StringBuilder title = new StringBuilder(titleSize + 1);
-
-            SendMessage(hWnd, (int)WM_GETTEXT, title.Capacity, title);
-
-            return title.ToString();
         }
     }
 }

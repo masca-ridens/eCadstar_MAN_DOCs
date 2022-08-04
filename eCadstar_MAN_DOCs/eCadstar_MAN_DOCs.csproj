@@ -160,6 +160,15 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <COMReference Include="eCSLECOM">
+      <Guid>{38B2B934-F3E7-45A8-A9EC-20FD05F1E8FF}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
     <COMReference Include="eCSPCBCOM">
       <Guid>{A0856972-79A4-425C-9D52-AE4E7BD162C2}</Guid>
       <VersionMajor>1</VersionMajor>
