@@ -164,6 +164,7 @@ namespace eCadstar_MAN_DOCs
             string bomFilePath = Path.Combine(targetDirectory, bomName + ".txt");
             string mfrFolderPath = Path.Combine(temporaryFolder, mfrName);
             string mfrZipFile = Path.Combine(targetDirectory, mfrName) + ".zip";
+            string cadZipFile = Path.Combine(targetDirectory, cadName) + ".zip";
 
             //----------------------------------------------------------------------------//
             //----------------------------- Pre-flight checks ----------------------------//
@@ -488,7 +489,10 @@ namespace eCadstar_MAN_DOCs
                 }
                 else
                 {
-                    File.Move(adrFilePath, Path.Combine(targetDirectory, adrName + ".pdf"));
+                    string localTarget = Path.Combine(targetDirectory, adrName + ".pdf");
+                    if (File.Exists(localTarget))
+                        File.Delete(localTarget);
+                    File.Move(adrFilePath, localTarget);
                 }
             }
 
@@ -513,21 +517,24 @@ namespace eCadstar_MAN_DOCs
                 Directory.CreateDirectory(Path.Combine(temporaryFolder, mfrName));  // Only created if it doesn't exist
                 string h = @"( playback-macro filepath:""" + @tmpMacro + @""")";
 
+                List<List<IntPtr>> handleList = new List<List<IntPtr>>();
+                List<IntPtr> newWindows = Windows.FindNewWindows(eCPcbProcessName, ref handleList);
+
                 var t1 = Task.Run(() => pcbEditor.ExecuteMacro(h.Replace(@"\", "/")));
                 t1.Wait();
 
-                // !!!!!!!!!!!!!!!!!!!!!!! need to detect when it is clear to continue, i.e. dialogs closed !!!!!!!!!!!!!!!!!!!
-                // eCadstar fails to respond to Windows message pump until plotting is complete
-                // Use this to find out when it is safe to continue
+                // We need to detect and close some dialog windows...
 
-                //GiveFocus(eCPcbProcessName);
-                //IntPtr hWnd = Find3rdPartyDialog(eCPcbProcessName, "eCADSTAR PCB Editor");
-                //PostMessage((int)hWnd, WM_CLOSE, 0, 0);
+                Stopwatch sw = Stopwatch.StartNew();
 
-                // Close the INFORMATION dialogue...
-
-                //hWnd = Find3rdPartyDialog(eCPcbProcessName, "Information");
-                //PostMessage((int)hWnd, WM_CLOSE, 0, 0);
+                while (sw.ElapsedMilliseconds < 29999)
+                {
+                    newWindows = Windows.FindNewWindows(eCPcbProcessName, ref handleList);
+                    if (newWindows.Count > 0)
+                    {
+                        Windows.CloseWindowByHandle(newWindows[0]);
+                    }
+                }
 
                 //----------------------------------------------------------------------------//
                 //--------------------- DRILL ------------------------------------------------//
@@ -539,7 +546,7 @@ namespace eCadstar_MAN_DOCs
 
                 h = @"( playback-macro filepath:""" + @tmpMacro + @""")";
                 //pcbEditor.ExecuteMacro(h.Replace(@"\", "/"));
-                //Move2Archive(new string[] { mfrFolderPath }, Path.Combine(targetDirectory, mfrName));
+                Move2Archive(new string[] { mfrFolderPath }, Path.Combine(targetDirectory, mfrName));
             }
 
             if (createCDR)
@@ -555,7 +562,7 @@ namespace eCadstar_MAN_DOCs
             if (createCAD)
             {
                 string[] q = new string[] { tbSchematicPath.Text, tbPcbPath.Text };
-                Move2Archive(q, mfrZipFile);
+                Move2Archive(q, cadZipFile);
             }
             bRun.Enabled = true;
         }
