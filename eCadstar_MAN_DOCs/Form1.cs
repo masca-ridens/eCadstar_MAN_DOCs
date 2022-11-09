@@ -170,6 +170,16 @@ namespace eCadstar_MAN_DOCs
             //----------------------------- Pre-flight checks ----------------------------//
             //----------------------------------------------------------------------------//
 
+            if (File.Exists(bomFilePath))
+            {
+                MessageBox.Show("The target directory contains a BOM file with the same name. Act now if you want to keep it.");
+                if (File.Exists(bomFilePath)) File.Delete(bomFilePath);
+            }
+            if (File.Exists(xypFilePath))
+            {
+                MessageBox.Show("The target directory contains an XYP file with the same name. Act now if you want to keep it.");
+                if (File.Exists(xypFilePath)) File.Delete(xypFilePath);
+            }
             if (checkedListBox1.CheckedItems.Count == 0)
             {
                 MessageBox.Show("Nothing selected");
