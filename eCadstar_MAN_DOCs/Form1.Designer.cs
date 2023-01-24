@@ -107,10 +107,12 @@ namespace eCadstar_MAN_DOCs
             "Create ADR",
             "Create GBR & DRILL",
             "Create CDR",
-            "Zip CAD docs"});
-            this.checkedListBox1.Location = new System.Drawing.Point(92, 186);
+            "Zip CAD docs",
+            "Create ODB++",
+            "Create IPC-2581"});
+            this.checkedListBox1.Location = new System.Drawing.Point(92, 169);
             this.checkedListBox1.Name = "checkedListBox1";
-            this.checkedListBox1.Size = new System.Drawing.Size(136, 109);
+            this.checkedListBox1.Size = new System.Drawing.Size(136, 124);
             this.checkedListBox1.TabIndex = 18;
             // 
             // statusStrip1

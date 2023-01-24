@@ -18,6 +18,7 @@ using System.Reflection;
 using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
+using System.Net.NetworkInformation;
 
 namespace eCadstar_MAN_DOCs
 {
@@ -210,6 +211,8 @@ namespace eCadstar_MAN_DOCs
             bool createGBR = checkedListBox1.CheckedItems.Contains("Create GBR & DRILL");
             bool createCDR = checkedListBox1.CheckedItems.Contains("Create CDR");
             bool createCAD = checkedListBox1.CheckedItems.Contains("Zip CAD docs");
+            bool createODB = checkedListBox1.CheckedItems.Contains("Create ODB++");
+            bool createIPC = checkedListBox1.CheckedItems.Contains("Create IPC-2581");
 
             if (createBOM || createXYP || createADR || createGBR || createGBR)
             {
@@ -232,7 +235,7 @@ namespace eCadstar_MAN_DOCs
 
                 string alreadyOpenSchematic = OpenScm(ref scmEditor, true, tbSchematicPath.Text);
                 scmEditor.Visible = true;
-                if (!alreadyOpenSchematic.Contains(tbPCBA.Text))
+                if (!alreadyOpenSchematic.ToUpper().Contains(tbPCBA.Text.ToUpper()))
                 {
                     MessageBox.Show("Please close " + alreadyOpenSchematic);
                     bRun.Enabled = true;
@@ -247,12 +250,8 @@ namespace eCadstar_MAN_DOCs
                 dtComponents = GetAllComponents(pcbEditor);
 
                 DataTable dtSymbols = new DataTable();
-                //if (checkedListBox1.GetItemCheckState(0) == CheckState.Checked
-                //|| checkedListBox1.GetItemCheckState(1) == CheckState.Checked)
-                //{
                 toolStripStatusLabel1.Text = "Fetching schematic parts";
                 dtSymbols = GetAllSymbols(scmEditor);
-                //}
 
                 scmEditor.Quit();
 
@@ -271,7 +270,6 @@ namespace eCadstar_MAN_DOCs
                 {
                     MessageBox.Show("No Fiducial pair found while searching the PCB for \"FIDxy\". Abandoning.", "Problem found...");
                     return;
-                    //Application.Exit();
                 }
                 if (sNotP.Count > 0 || pNotS.Count > 0)
                 {
@@ -341,7 +339,8 @@ namespace eCadstar_MAN_DOCs
                     row["X_coordinate"].ToString().PadRight(20, ' '),
                     row["Y_coordinate"].ToString().PadRight(20, ' '),
                     row["Angle"].ToString().PadRight(20, ' '),
-                    row["Placement_side"].ToString()
+                    row["Placement_side"].ToString().PadRight(20, ' '),
+                    row["Description"].ToString()
                 };
 
                             lines.Add(string.Join("", temporaryList.ToArray()));
@@ -374,8 +373,8 @@ namespace eCadstar_MAN_DOCs
                 {
                 "DESIGN: " + assemblyNo + "   " + DateTime.Now,
                 string.Empty,
-                "Reference".PadRight(20, ' ') + "Part".PadRight(20, ' ') + "x".PadRight(20, ' ') + "y".PadRight(20, ' ') + "Angle".PadRight(20, ' ') + "Side", string.Empty};
-                        //xypFilePath = Path.Combine(targetDirectory, assemblyNo + "-" + numPcbaNo.Value.ToString() + "-XYP.txt");
+                "Reference".PadRight(20, ' ') + "Part".PadRight(20, ' ') + "x (microns)".PadRight(20, ' ') + "y (microns)".PadRight(20, ' ') + "Angle".PadRight(20, ' ') + "Side", string.Empty};
+                        
                         File.WriteAllLines(xypFilePath, header);
                         File.AppendAllLines(xypFilePath, result);
                     }
@@ -457,25 +456,31 @@ namespace eCadstar_MAN_DOCs
 
             if (createADR)
             {
-                string sd = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-                        @"Resources", "ADRtb.plot");
-                if (File.Exists(sd))
+                // The ADR config file is based on a template contained in the RESOURCES directory of this solution...
+
+                string adrConfigPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"Resources", "ADRtb.plot");
+                if (File.Exists(adrConfigPath))
                 {
-                    string tempCopy = Path.Combine(temporaryFolder, "ADRtb.plot");
-                    File.Copy(sd, tempCopy, true);
-                    string text = File.ReadAllText(Path.Combine(temporaryFolder, "ADRtb.plot"));
-                    text = text.Replace("A000xxx-y-ADR.pdf", adrName);
-                    File.WriteAllText(Path.Combine(temporaryFolder, "ADRtb.plot"), text);
+                    // Read the config from the local resource file and edit the Assy number...
+                    string adrConfigText = File.ReadAllText(adrConfigPath).Replace("A000xxx-y-ADR.pdf", adrName);
+
+                    // Save it to a temp directory...
+
+                    File.WriteAllText(Path.Combine(temporaryFolder, "ADRtb.plot"), adrConfigText);
+
+                    // Audit all open Windows (will need this later)...
 
                     List<List<IntPtr>> handleList = new List<List<IntPtr>>();
                     List<IntPtr> newWindows = Windows.FindNewWindows(eCPcbProcessName, ref handleList);
 
-                    sd = "(plot prmfile:\"" + Path.Combine(temporaryFolder, "ADRtb.plot") + "\")";
-                    sd = sd.Replace("\\", "/");
-                    var t = Task.Run(() => pcbEditor.ExecuteMacro(sd));
+                    // Stitch it all into a macro that eCadstar can run...
+
+                    string adrMacro = "(plot prmfile:\"" + Path.Combine(temporaryFolder, "ADRtb.plot") + "\")";
+                    adrMacro = adrMacro.Replace("\\", "/");
+                    var t = Task.Run(() => pcbEditor.ExecuteMacro(adrMacro));
                     t.Wait(999);
 
-                    // Upon completion, expect a single window announcing success...
+                    // Upon completion, expect a (new) single window announcing success...
                     Stopwatch sw = Stopwatch.StartNew();
                     
                     while(sw.ElapsedMilliseconds < 9999)
@@ -575,6 +580,15 @@ namespace eCadstar_MAN_DOCs
                 Move2Archive(q, cadZipFile);
             }
             bRun.Enabled = true;
+
+            if(createODB)
+            {
+
+            }
+            if(createIPC)
+            {
+
+            }
         }
         private bool Move2Archive(string[] source, string target)
         {
@@ -825,6 +839,7 @@ namespace eCadstar_MAN_DOCs
             dtComponents.Columns.Add("Placement_side");
             dtComponents.Columns.Add("isJumper");
             dtComponents.Columns.Add("isStarpoint");
+            dtComponents.Columns.Add("Description");
 
             //-----------------------------------------------------------------------------//
             //---------------------- Fetch all COMPONENTS ---------------------------------//
@@ -857,6 +872,7 @@ namespace eCadstar_MAN_DOCs
                 dr["Placement_side"] = component.PlacementSide;
                 dr["isJumper"] = component.IsJumper.ToString();
                 dr["isStarpoint"] = component.IsStarpoint.ToString();
+                dr["Description"] = component.Part.Description.ToString();
 
                 foreach (KeyValuePair<string, string> prop in properties)
                 {
@@ -864,7 +880,6 @@ namespace eCadstar_MAN_DOCs
                 }
 
                 dtComponents.Rows.Add(dr);
-
             }
             return dtComponents;
         }

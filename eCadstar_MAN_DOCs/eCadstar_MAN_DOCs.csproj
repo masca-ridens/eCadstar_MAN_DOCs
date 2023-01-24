@@ -71,10 +71,11 @@
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>6F29F601B85DEFB816B1A009846044F8D60A1E04</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>ADDDFF893FB0EE764C7D3EC7681C660CF6C81ABA</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestKeyFile>eCadstar_MAN_DOCs_TemporaryKey.pfx</ManifestKeyFile>
+    <ManifestKeyFile>
+    </ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
     <GenerateManifests>true</GenerateManifests>
