@@ -70,7 +70,7 @@ namespace eCadstar_MAN_DOCs {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ( print plottername:&quot;PDF&quot; outputfile:&quot;C:/Users/mike.jones/Documents/eCadstar/.mfr/A000xxx-y-CDR.pdf&quot; papersize:4 papersize.x:210 papersize.y:297 direction:&quot;LANDSCAPE&quot; margin.top:0 margin.bottom:0 margin.left:0 margin.right:0 color:&quot;AUTO&quot; coloremphasis:&quot;OFF&quot; clip:&quot;OFF&quot; mirror:&quot;OFF&quot; rotate:0 autoscale:&quot;ON&quot; scale.value:1 autooffset:&quot;ON&quot; offset.x:0 offset.y:0 outputnotfitteditems:&quot;ON&quot; outputunconnectedmark:&quot;OFF&quot; usemoveannotation:&quot;OFF&quot; createbookmark:&quot;OFF&quot; componentbookmark:&quot;OFF&quot; componentpinbookmark:&quot;OFF&quot; netb [rest of string was truncated]&quot;;.
+        ///   Looks up a localized string similar to ( print plottername:&quot;PDF&quot; outputfile:&quot;C:/Users/mike.jones/Documents/eCadstar/.mfr/A000xxx-y-CDR.pdf&quot; papersize:4 papersize.x:210 papersize.y:297 direction:&quot;LANDSCAPE&quot; margin.top:0 margin.bottom:0 margin.left:0 margin.right:0 color:&quot;AUTO&quot; coloremphasis:&quot;OFF&quot; clip:&quot;OFF&quot; mirror:&quot;OFF&quot; rotate:0 autoscale:&quot;ON&quot; scale.value:1 autooffset:&quot;ON&quot; offset.x:0 offset.y:0 outputnotfitteditems:&quot;ON&quot; outputunconnectedmark:&quot;OFF&quot; usemoveannotation:&quot;OFF&quot; createbookmark:&quot;ON&quot; componentbookmark:&quot;ON&quot; componentpinbookmark:&quot;OFF&quot; netboo [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string CDR_Print_settings {
             get {

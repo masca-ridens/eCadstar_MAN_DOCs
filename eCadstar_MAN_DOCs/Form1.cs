@@ -162,21 +162,37 @@ namespace eCadstar_MAN_DOCs
             string cdrFilePath = Path.Combine(targetDirectory, cdrName + ".txt");
             string scmFilePath = Path.Combine(temporaryFolder, scmName + ".sdes");
             string pcbFilePath = Path.Combine(temporaryFolder, pcbName + ".pdes");
-            string bomFilePath = Path.Combine(targetDirectory, bomName + ".txt");
+            string bomFilePath = Path.Combine(targetDirectory, bomName + ".rep");
             string mfrFolderPath = Path.Combine(temporaryFolder, mfrName);
             string mfrZipFile = Path.Combine(targetDirectory, mfrName) + ".zip";
             string cadZipFile = Path.Combine(targetDirectory, cadName) + ".zip";
+
+            // -------------------------------------------------------------------------//
+            // ----- Find which items are wanted, from the checkboxes ------------------//
+            // -------------------------------------------------------------------------//
+
+            bool createADR = checkedListBox1.CheckedItems.Contains("Create ADR");
+            bool createBOM = checkedListBox1.CheckedItems.Contains("Create BOM");
+            bool createCAD = checkedListBox1.CheckedItems.Contains("Zip CAD docs");
+            bool createCDR = checkedListBox1.CheckedItems.Contains("Create CDR");
+            bool createGBR = checkedListBox1.CheckedItems.Contains("Create GBR & DRILL");
+            bool createIPC = checkedListBox1.CheckedItems.Contains("Create IPC-2581");
+            bool createODB = checkedListBox1.CheckedItems.Contains("Create ODB++");
+            bool createXYP = checkedListBox1.CheckedItems.Contains("Create XYP");
+
+            bool scmNeeded = createBOM || createCAD || createCDR || createXYP;
+            bool pcbNeeded = createADR || createBOM || createCAD || createGBR || createODB || createIPC;
 
             //----------------------------------------------------------------------------//
             //----------------------------- Pre-flight checks ----------------------------//
             //----------------------------------------------------------------------------//
 
-            if (File.Exists(bomFilePath))
+            if (File.Exists(bomFilePath) && createBOM)
             {
                 MessageBox.Show("The target directory contains a BOM file with the same name. Act now if you want to keep it.");
                 if (File.Exists(bomFilePath)) File.Delete(bomFilePath);
             }
-            if (File.Exists(xypFilePath))
+            if (File.Exists(xypFilePath) && createXYP)
             {
                 MessageBox.Show("The target directory contains an XYP file with the same name. Act now if you want to keep it.");
                 if (File.Exists(xypFilePath)) File.Delete(xypFilePath);
@@ -186,13 +202,13 @@ namespace eCadstar_MAN_DOCs
                 MessageBox.Show("Nothing selected");
                 return;
             }
-            if (!File.Exists(tbPcbPath.Text))
+            if (!File.Exists(tbPcbPath.Text) && pcbNeeded)
             {
                 MessageBox.Show("PCB design file not found");
                 return;
             }
 
-            if (!File.Exists(tbSchematicPath.Text))
+            if (!File.Exists(tbSchematicPath.Text) && scmNeeded)
             {
                 MessageBox.Show("Schematic design file not found");
                 return;
@@ -203,18 +219,7 @@ namespace eCadstar_MAN_DOCs
             PCBApplication pcbEditor = null;
             SchApplication scmEditor = null;
 
-            // Find which items are wanted from the checkboxes...
-
-            bool createBOM = checkedListBox1.CheckedItems.Contains("Create BOM");
-            bool createXYP = checkedListBox1.CheckedItems.Contains("Create XYP");
-            bool createADR = checkedListBox1.CheckedItems.Contains("Create ADR");
-            bool createGBR = checkedListBox1.CheckedItems.Contains("Create GBR & DRILL");
-            bool createCDR = checkedListBox1.CheckedItems.Contains("Create CDR");
-            bool createCAD = checkedListBox1.CheckedItems.Contains("Zip CAD docs");
-            bool createODB = checkedListBox1.CheckedItems.Contains("Create ODB++");
-            bool createIPC = checkedListBox1.CheckedItems.Contains("Create IPC-2581");
-
-            if (createBOM || createXYP || createADR || createGBR || createGBR)
+            if (pcbNeeded)
             {
                 //-----------------------------------------------------------------------------//
                 //---------------------- Open the eCadstar PCB design -------------------------//
@@ -227,7 +232,7 @@ namespace eCadstar_MAN_DOCs
                 eCPcbMainWindowHandle = eCPcbProcessNumber.MainWindowHandle;
             }
 
-            if (createBOM || createXYP || createCDR)
+            if (scmNeeded)
             {
                 //-----------------------------------------------------------------------------//
                 //---------------------- Open the eCadstar SCM design -------------------------//
@@ -515,10 +520,10 @@ namespace eCadstar_MAN_DOCs
             {
                 pcbEditor.ProcessingDialog(false);
 
-                string gerberMacro = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"Resources", "Gerber_macro.txt");
-                string drillMacro = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"Resources", "Drill_macro.txt");
-                string gerberSettings = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"Resources", "Gerber_dialog.photo");
-                string drillSettings = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"Resources", "Drill_dialog.drill");
+                //string gerberMacro = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"Resources", "Gerber_macro.txt");
+                //string drillMacro = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"Resources", "Drill_macro.txt");
+                //string gerberSettings = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"Resources", "Gerber_dialog.photo");
+                //string drillSettings = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"Resources", "Drill_dialog.drill");
 
                 //----------------------------------------------------------------------------//
                 //--------------------- GERBERS ----------------------------------------------//
@@ -532,6 +537,7 @@ namespace eCadstar_MAN_DOCs
                 Directory.CreateDirectory(Path.Combine(temporaryFolder, mfrName));  // Only created if it doesn't exist
                 string h = @"( playback-macro filepath:""" + @tmpMacro + @""")";
 
+                // Audit open Windows (needed later)...
                 List<List<IntPtr>> handleList = new List<List<IntPtr>>();
                 List<IntPtr> newWindows = Windows.FindNewWindows(eCPcbProcessName, ref handleList);
 
@@ -560,7 +566,6 @@ namespace eCadstar_MAN_DOCs
                 File.WriteAllText(tmpMacro, @"( export-drill prmfile:""" + tmpSettings + @""" exec )");
 
                 h = @"( playback-macro filepath:""" + @tmpMacro + @""")";
-                //pcbEditor.ExecuteMacro(h.Replace(@"\", "/"));
                 Move2Archive(new string[] { mfrFolderPath }, Path.Combine(targetDirectory, mfrName));
             }
 

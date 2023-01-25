@@ -121,7 +121,7 @@
     <value>(plot prmfile:"C:\\Users\\mike.jones\\Documents\\eCadstar\\SETTINGS_local\\Manufacture\\ADR\\ADRtb.plot")</value>
   </data>
   <data name="CDR_Print_settings" xml:space="preserve">
-    <value>( print plottername:"PDF" outputfile:"C:/Users/mike.jones/Documents/eCadstar/.mfr/A000xxx-y-CDR.pdf" papersize:4 papersize.x:210 papersize.y:297 direction:"LANDSCAPE" margin.top:0 margin.bottom:0 margin.left:0 margin.right:0 color:"AUTO" coloremphasis:"OFF" clip:"OFF" mirror:"OFF" rotate:0 autoscale:"ON" scale.value:1 autooffset:"ON" offset.x:0 offset.y:0 outputnotfitteditems:"ON" outputunconnectedmark:"OFF" usemoveannotation:"OFF" createbookmark:"OFF" componentbookmark:"OFF" componentpinbookmark:"OFF" netbookmark:"OFF" connectorbookmark:"OFF" compress:"ON" forcedoverwrite:"ON" allsheets )</value>
+    <value>( print plottername:"PDF" outputfile:"C:/Users/mike.jones/Documents/eCadstar/.mfr/A000xxx-y-CDR.pdf" papersize:4 papersize.x:210 papersize.y:297 direction:"LANDSCAPE" margin.top:0 margin.bottom:0 margin.left:0 margin.right:0 color:"AUTO" coloremphasis:"OFF" clip:"OFF" mirror:"OFF" rotate:0 autoscale:"ON" scale.value:1 autooffset:"ON" offset.x:0 offset.y:0 outputnotfitteditems:"ON" outputunconnectedmark:"OFF" usemoveannotation:"OFF" createbookmark:"ON" componentbookmark:"ON" componentpinbookmark:"OFF" netbookmark:"OFF" connectorbookmark:"OFF" compress:"ON" forcedoverwrite:"ON" allsheets )</value>
     <comment>For printing a schematic, all pages, to PDF</comment>
   </data>
   <data name="DrillSettings" xml:space="preserve">
