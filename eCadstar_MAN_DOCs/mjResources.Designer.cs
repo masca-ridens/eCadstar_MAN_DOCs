@@ -61,7 +61,7 @@ namespace eCadstar_MAN_DOCs {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to (plot prmfile:&quot;C:\\Users\\mike.jones\\Documents\\eCadstar\\SETTINGS_local\\Manufacture\\ADR\\ADRtb.plot&quot;).
+        ///   Looks up a localized string similar to (plot prmfile:&quot;A:\\SETTINGS\\Manufacture\\ADR\\ADRtb.plot&quot;).
         /// </summary>
         internal static string ADR_Plot_settings {
             get {

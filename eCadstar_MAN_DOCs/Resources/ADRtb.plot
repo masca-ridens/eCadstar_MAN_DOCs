@@ -86,7 +86,7 @@
         <layer hatchAngle1="0.00000" hatchAngle2="0.00000" hatchPitch="0.00000" mirror="off" mode="width" name="WIR6" output="off" palletColor="#000000" penColor="#000000" penWidth="0.08000" transparency="0" type="data"/>
         <layer hatchAngle1="0.00000" hatchAngle2="0.00000" hatchPitch="0.00000" mirror="off" mode="width" name="Symbol-B" output="off" palletColor="#000000" penColor="#000000" penWidth="0.08000" transparency="0" type="data"/>
         <layer hatchAngle1="0.00000" hatchAngle2="0.00000" hatchPitch="0.00000" mirror="off" mode="width" name="Symbol-B-1" output="off" palletColor="#000000" penColor="#000000" penWidth="0.08000" transparency="0" type="data"/>
-        <layer hatchAngle1="0.00000" hatchAngle2="0.00000" hatchPitch="0.00000" mirror="off" mode="width" name="Resist-B" output="off" palletColor="#000000" penColor="#000000" penWidth="0.08000" transparency="0" type="data"/>
+        <layer hatchAngle1="0.00000" hatchAngle2="0.00000" hatchPitch="0.00000" mirror="off" mode="width" name="Resist-B" output="on" palletColor="#000000" penColor="#000000" penWidth="0.08000" transparency="0" type="data"/>
         <layer hatchAngle1="0.00000" hatchAngle2="0.00000" hatchPitch="0.00000" mirror="off" mode="width" name="MetalMask-B" output="off" palletColor="#000000" penColor="#000000" penWidth="0.08000" transparency="0" type="data"/>
         <layer hatchAngle1="0.00000" hatchAngle2="0.00000" hatchPitch="0.00000" mirror="off" mode="width" name="HeightLimit-B" output="off" palletColor="#000000" penColor="#000000" penWidth="0.08000" transparency="0" type="data"/>
         <layer hatchAngle1="0.00000" hatchAngle2="0.00000" hatchPitch="0.00000" mirror="off" mode="width" name="CompArea-B" output="off" palletColor="#000000" penColor="#000000" penWidth="0.08000" transparency="0" type="data"/>
@@ -142,7 +142,6 @@
       </layerAttribute>
       <objectAttribute>
         <object hatchAngle1="0.00000" hatchAngle2="0.00000" hatchPitch="0.00000" mode="width" output="on" palletColor="#000000" penColor="#000000" penWidth="0.08000" type="line" valid="off"/>
-        <object hatchAngle1="0.00000" hatchAngle2="0.00000" hatchPitch="0.00000" mode="width" output="on" palletColor="#000000" penColor="#000000" penWidth="0.08000" type="padstkpad" valid="off"/>
         <object hatchAngle1="0.00000" hatchAngle2="0.00000" hatchPitch="0.00000" mode="width" output="on" palletColor="#000000" penColor="#000000" penWidth="0.08000" type="pad" valid="off"/>
         <object hatchAngle1="0.00000" hatchAngle2="0.00000" hatchPitch="0.00000" mode="width" output="on" palletColor="#000000" penColor="#000000" penWidth="0.08000" type="areafill" valid="off"/>
         <object hatchAngle1="0.00000" hatchAngle2="0.00000" hatchPitch="0.00000" mode="width" output="on" palletColor="#000000" penColor="#000000" penWidth="0.08000" type="meshplane" valid="off"/>
@@ -275,8 +274,8 @@
         <layer hatchAngle1="0.00000" hatchAngle2="0.00000" hatchPitch="0.00000" mirror="off" mode="width" name="WIR5" output="off" palletColor="#000000" penColor="#000000" penWidth="0.08000" transparency="0" type="data"/>
         <layer hatchAngle1="0.00000" hatchAngle2="0.00000" hatchPitch="0.00000" mirror="off" mode="width" name="WIR6" output="off" palletColor="#000000" penColor="#000000" penWidth="0.08000" transparency="0" type="data"/>
         <layer hatchAngle1="0.00000" hatchAngle2="0.00000" hatchPitch="0.00000" mirror="off" mode="width" name="Symbol-B" output="off" palletColor="#000000" penColor="#000000" penWidth="0.08000" transparency="0" type="data"/>
-        <layer hatchAngle1="0.00000" hatchAngle2="0.00000" hatchPitch="0.00000" mirror="off" mode="width" name="Symbol-B-1" output="on" palletColor="#000000" penColor="#000000" penWidth="0.08000" transparency="0" type="data"/>
-        <layer hatchAngle1="0.00000" hatchAngle2="0.00000" hatchPitch="0.00000" mirror="off" mode="width" name="Resist-B" output="off" palletColor="#000000" penColor="#000000" penWidth="0.08000" transparency="0" type="data"/>
+        <layer hatchAngle1="0.00000" hatchAngle2="0.00000" hatchPitch="0.00000" mirror="x" mode="width" name="Symbol-B-1" output="on" palletColor="#000000" penColor="#000000" penWidth="0.08000" transparency="0" type="data"/>
+        <layer hatchAngle1="0.00000" hatchAngle2="0.00000" hatchPitch="0.00000" mirror="x" mode="width" name="Resist-B" output="on" palletColor="#000000" penColor="#000000" penWidth="0.08000" transparency="0" type="data"/>
         <layer hatchAngle1="0.00000" hatchAngle2="0.00000" hatchPitch="0.00000" mirror="off" mode="width" name="MetalMask-B" output="off" palletColor="#000000" penColor="#000000" penWidth="0.08000" transparency="0" type="data"/>
         <layer hatchAngle1="0.00000" hatchAngle2="0.00000" hatchPitch="0.00000" mirror="off" mode="width" name="HeightLimit-B" output="off" palletColor="#000000" penColor="#000000" penWidth="0.08000" transparency="0" type="data"/>
         <layer hatchAngle1="0.00000" hatchAngle2="0.00000" hatchPitch="0.00000" mirror="off" mode="width" name="CompArea-B" output="off" palletColor="#000000" penColor="#000000" penWidth="0.08000" transparency="0" type="data"/>
@@ -332,7 +331,6 @@
       </layerAttribute>
       <objectAttribute>
         <object hatchAngle1="0.00000" hatchAngle2="0.00000" hatchPitch="0.00000" mode="width" output="on" palletColor="#000000" penColor="#000000" penWidth="0.08000" type="line" valid="off"/>
-        <object hatchAngle1="0.00000" hatchAngle2="0.00000" hatchPitch="0.00000" mode="width" output="on" palletColor="#000000" penColor="#000000" penWidth="0.08000" type="padstkpad" valid="off"/>
         <object hatchAngle1="0.00000" hatchAngle2="0.00000" hatchPitch="0.00000" mode="width" output="on" palletColor="#000000" penColor="#000000" penWidth="0.08000" type="pad" valid="off"/>
         <object hatchAngle1="0.00000" hatchAngle2="0.00000" hatchPitch="0.00000" mode="width" output="on" palletColor="#000000" penColor="#000000" penWidth="0.08000" type="areafill" valid="off"/>
         <object hatchAngle1="0.00000" hatchAngle2="0.00000" hatchPitch="0.00000" mode="width" output="on" palletColor="#000000" penColor="#000000" penWidth="0.08000" type="meshplane" valid="off"/>

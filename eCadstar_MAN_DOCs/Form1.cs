@@ -180,8 +180,8 @@ namespace eCadstar_MAN_DOCs
             bool createODB = checkedListBox1.CheckedItems.Contains("Create ODB++");
             bool createXYP = checkedListBox1.CheckedItems.Contains("Create XYP");
 
-            bool scmNeeded = createBOM || createCAD || createCDR || createXYP;
-            bool pcbNeeded = createADR || createBOM || createCAD || createGBR || createODB || createIPC;
+            bool scmNeeded = createBOM || createCDR || createXYP;
+            bool pcbNeeded = createADR || createBOM || createGBR || createODB || createIPC;
 
             //----------------------------------------------------------------------------//
             //----------------------------- Pre-flight checks ----------------------------//
