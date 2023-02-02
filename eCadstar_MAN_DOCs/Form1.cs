@@ -181,7 +181,7 @@ namespace eCadstar_MAN_DOCs
             bool createXYP = checkedListBox1.CheckedItems.Contains("Create XYP");
 
             bool scmNeeded = createBOM || createCDR || createXYP;
-            bool pcbNeeded = createADR || createBOM || createGBR || createODB || createIPC;
+            bool pcbNeeded = createXYP || createADR || createBOM || createGBR || createODB || createIPC;
 
             //----------------------------------------------------------------------------//
             //----------------------------- Pre-flight checks ----------------------------//
@@ -320,8 +320,12 @@ namespace eCadstar_MAN_DOCs
                             if (!row["Reference_designator"].ToString().StartsWith("FID"))
                             {
                                 // Allow test points...
-                                if (row["Ddm_Part"].ToString() == "No" &&
-                                        !row["Reference_designator"].ToString().StartsWith("TP")) continue;
+                                //if (row["Ddm_Part"].ToString() == "No" &&
+                                //        !row["Reference_designator"].ToString().StartsWith("TP")) continue;
+
+                                // Reject non-DDM parts...
+
+                                if (row["Ddm_Part"].ToString() == "No") continue;
 
                                 // Reject NO-FIT parts...
 
@@ -338,15 +342,15 @@ namespace eCadstar_MAN_DOCs
                             }
 
                             List<string> temporaryList = new List<string>()
-                {
-                    row["Reference_designator"].ToString().PadRight(20, ' '),
-                    row["Part_name"].ToString().PadRight(20, ' '),
-                    row["X_coordinate"].ToString().PadRight(20, ' '),
-                    row["Y_coordinate"].ToString().PadRight(20, ' '),
-                    row["Angle"].ToString().PadRight(20, ' '),
-                    row["Placement_side"].ToString().PadRight(20, ' '),
-                    row["Description"].ToString()
-                };
+                            {
+                                row["Reference_designator"].ToString().PadRight(20, ' '),
+                                row["Part_name"].ToString().PadRight(20, ' '),
+                                row["X_coordinate"].ToString().PadRight(20, ' '),
+                                row["Y_coordinate"].ToString().PadRight(20, ' '),
+                                row["Angle"].ToString().PadRight(20, ' '),
+                                row["Placement_side"].ToString().PadRight(20, ' '),
+                                row["Description"].ToString()
+                            };
 
                             lines.Add(string.Join("", temporaryList.ToArray()));
                         }
@@ -379,7 +383,7 @@ namespace eCadstar_MAN_DOCs
                 "DESIGN: " + assemblyNo + "   " + DateTime.Now,
                 string.Empty,
                 "Reference".PadRight(20, ' ') + "Part".PadRight(20, ' ') + "x (microns)".PadRight(20, ' ') + "y (microns)".PadRight(20, ' ') + "Angle".PadRight(20, ' ') + "Side", string.Empty};
-                        
+
                         File.WriteAllLines(xypFilePath, header);
                         File.AppendAllLines(xypFilePath, result);
                     }
@@ -487,8 +491,8 @@ namespace eCadstar_MAN_DOCs
 
                     // Upon completion, expect a (new) single window announcing success...
                     Stopwatch sw = Stopwatch.StartNew();
-                    
-                    while(sw.ElapsedMilliseconds < 9999)
+
+                    while (sw.ElapsedMilliseconds < 9999)
                     {
                         newWindows = Windows.FindNewWindows(eCPcbProcessName, ref handleList);
                         if (newWindows.Count > 0)
@@ -586,11 +590,11 @@ namespace eCadstar_MAN_DOCs
             }
             bRun.Enabled = true;
 
-            if(createODB)
+            if (createODB)
             {
 
             }
-            if(createIPC)
+            if (createIPC)
             {
 
             }
